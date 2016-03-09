@@ -23,13 +23,13 @@ import rx.subjects.ReplaySubject;
  * any UI elements and is retained across configuration changes. It is useful for encapsulating
  * background tasks.
  */
-public abstract class BaseWorker<T, S extends BaseWorkerListener> extends Fragment {
+public abstract class BaseRxWorker<T, S extends BaseWorkerListener> extends Fragment {
 
     private final ReplaySubject<T> mSubject = ReplaySubject.create();
     protected S mListener;
     private Subscription mSubscription;
 
-    public BaseWorker() {
+    public BaseRxWorker() {
         // empty default constructor
     }
 

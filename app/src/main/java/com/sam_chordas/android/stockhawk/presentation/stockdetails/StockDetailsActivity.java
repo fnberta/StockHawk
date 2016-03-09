@@ -15,7 +15,6 @@ import android.view.View;
 import com.github.mikephil.charting.data.LineDataSet;
 import com.sam_chordas.android.stockhawk.R;
 import com.sam_chordas.android.stockhawk.StockHawk;
-import com.sam_chordas.android.stockhawk.data.di.RepositoriesModule;
 import com.sam_chordas.android.stockhawk.data.rest.QuoteTime;
 import com.sam_chordas.android.stockhawk.databinding.ActivityStockDetailsBinding;
 import com.sam_chordas.android.stockhawk.domain.repositories.StockRepository;
@@ -23,6 +22,7 @@ import com.sam_chordas.android.stockhawk.presentation.common.BaseActivity;
 import com.sam_chordas.android.stockhawk.presentation.mystocks.MyStocksActivity;
 import com.sam_chordas.android.stockhawk.presentation.stockdetails.di.DaggerStockDetailsComponent;
 import com.sam_chordas.android.stockhawk.presentation.stockdetails.di.StockDetailsComponent;
+import com.sam_chordas.android.stockhawk.presentation.stockdetails.di.StockDetailsLoaderModule;
 import com.sam_chordas.android.stockhawk.presentation.stockdetails.di.StockDetailsViewModelModule;
 import com.sam_chordas.android.stockhawk.utils.Utils;
 
@@ -74,7 +74,7 @@ public class StockDetailsActivity extends BaseActivity<StockDetailsViewModel>
         mComponent = DaggerStockDetailsComponent.builder()
                 .applicationComponent(StockHawk.getAppComponent(this))
                 .stockDetailsViewModelModule(new StockDetailsViewModelModule(savedInstanceState, this, stockSymbol))
-                .repositoriesModule(new RepositoriesModule())
+                .stockDetailsLoaderModule(new StockDetailsLoaderModule(stockSymbol))
                 .build();
         mComponent.inject(this);
     }

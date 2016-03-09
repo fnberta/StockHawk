@@ -34,7 +34,6 @@ public class StockHawk extends Application {
     private void buildAppComponent() {
         mAppComponent = DaggerApplicationComponent.builder()
                 .applicationModule(new ApplicationModule(this))
-                .yahooFinanceServiceModule(new YahooFinanceServiceModule())
                 .build();
     }
 }

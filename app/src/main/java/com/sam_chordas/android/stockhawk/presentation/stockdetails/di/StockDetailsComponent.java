@@ -17,7 +17,7 @@ import dagger.Component;
  */
 @PerActivity
 @Component(dependencies = {ApplicationComponent.class},
-        modules = {StockDetailsViewModelModule.class, RepositoriesModule.class})
+        modules = {StockDetailsViewModelModule.class, StockDetailsLoaderModule.class, RepositoriesModule.class})
 public interface StockDetailsComponent {
 
     void inject(StockDetailsActivity stockDetailsActivity);

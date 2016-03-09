@@ -30,6 +30,7 @@ import com.sam_chordas.android.stockhawk.domain.repositories.StockRepository;
 import com.sam_chordas.android.stockhawk.presentation.common.BaseActivity;
 import com.sam_chordas.android.stockhawk.presentation.mystocks.di.DaggerMyStocksComponent;
 import com.sam_chordas.android.stockhawk.presentation.mystocks.di.MyStocksComponent;
+import com.sam_chordas.android.stockhawk.presentation.mystocks.di.MyStocksLoaderModule;
 import com.sam_chordas.android.stockhawk.presentation.mystocks.di.MyStocksViewModelModule;
 import com.sam_chordas.android.stockhawk.presentation.stockdetails.StockDetailsActivity;
 import com.sam_chordas.android.stockhawk.utils.Utils;
@@ -70,7 +71,6 @@ public class MyStocksActivity extends BaseActivity<MyStocksViewModel>
         mComponent = DaggerMyStocksComponent.builder()
                 .applicationComponent(StockHawk.getAppComponent(this))
                 .myStocksViewModelModule(new MyStocksViewModelModule(savedInstanceState, this))
-                .repositoriesModule(new RepositoriesModule())
                 .build();
         mComponent.inject(this);
     }

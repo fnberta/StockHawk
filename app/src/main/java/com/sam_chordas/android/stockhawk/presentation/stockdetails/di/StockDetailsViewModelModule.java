@@ -41,11 +41,4 @@ public class StockDetailsViewModelModule extends BaseViewModelModule<StockDetail
     StockDetailsViewModel providesStockDetailsViewModel() {
         return new StockDetailsViewModelImpl(mSavedState, mView, mStockSymbol);
     }
-
-    @PerActivity
-    @Provides
-    StockDetailsLoader providesStockDetailsLoader(@NonNull Application application,
-                                                  @NonNull StockRepository stockRepository) {
-        return new StockDetailsLoader(application, stockRepository, mStockSymbol);
-    }
 }

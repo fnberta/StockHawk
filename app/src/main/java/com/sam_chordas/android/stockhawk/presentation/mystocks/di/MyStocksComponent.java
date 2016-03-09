@@ -18,7 +18,7 @@ import dagger.Component;
  */
 @PerActivity
 @Component(dependencies = {ApplicationComponent.class},
-        modules = {MyStocksViewModelModule.class, RepositoriesModule.class})
+        modules = {MyStocksViewModelModule.class, MyStocksLoaderModule.class, RepositoriesModule.class})
 public interface MyStocksComponent {
 
     void inject(MyStocksActivity myStocksActivity);
