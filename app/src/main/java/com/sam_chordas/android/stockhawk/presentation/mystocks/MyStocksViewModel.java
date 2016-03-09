@@ -4,6 +4,7 @@ import android.databinding.Bindable;
 import android.support.annotation.NonNull;
 import android.support.annotation.StringRes;
 import android.support.v4.content.CursorLoader;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.view.View;
 
 import com.sam_chordas.android.stockhawk.presentation.common.ViewModel;
@@ -20,6 +21,11 @@ public interface MyStocksViewModel extends ViewModel, MyStocksRecyclerAdapter.Ad
 
     void setLoading(boolean loading);
 
+    @Bindable
+    boolean isRefreshing();
+
+    void setRefreshing(boolean refreshing);
+
     boolean isShowPercent();
 
     void onLoadingLocalStocks();
@@ -32,6 +38,8 @@ public interface MyStocksViewModel extends ViewModel, MyStocksRecyclerAdapter.Ad
     @Override
     void onStockEntered(@NonNull String stockSymbol);
 
+    SwipeRefreshLayout.OnRefreshListener getOnRefreshListener();
+
     void onFabClick(View view);
 
     void onChangeUnitsMenuClick();
@@ -42,6 +50,8 @@ public interface MyStocksViewModel extends ViewModel, MyStocksRecyclerAdapter.Ad
         void showFindStockDialog();
 
         void loadUpdateStocksService();
+
+        void loadPeriodicQueryService();
 
         void loadSaveStockWorker(@NonNull String stockSymbol);
 

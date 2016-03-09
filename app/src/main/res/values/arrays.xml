@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<resources>
+    <integer-array
+        name="srl_color_scheme">
+        <item>@color/material_blue_700</item>
+        <item>@color/material_blue_500</item>
+        <item>@color/material_red_700</item>
+        <item>@color/material_green_700</item>
+    </integer-array>
+</resources>

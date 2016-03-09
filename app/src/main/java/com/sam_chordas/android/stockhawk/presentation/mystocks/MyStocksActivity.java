@@ -9,6 +9,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.helper.ItemTouchHelper;
@@ -22,7 +23,6 @@ import com.google.android.gms.gcm.Task;
 import com.sam_chordas.android.stockhawk.BuildConfig;
 import com.sam_chordas.android.stockhawk.R;
 import com.sam_chordas.android.stockhawk.StockHawk;
-import com.sam_chordas.android.stockhawk.data.di.RepositoriesModule;
 import com.sam_chordas.android.stockhawk.data.services.UpdateStocksIntentService;
 import com.sam_chordas.android.stockhawk.data.services.UpdateStocksTaskService;
 import com.sam_chordas.android.stockhawk.databinding.ActivityMyStocksBinding;
@@ -30,7 +30,6 @@ import com.sam_chordas.android.stockhawk.domain.repositories.StockRepository;
 import com.sam_chordas.android.stockhawk.presentation.common.BaseActivity;
 import com.sam_chordas.android.stockhawk.presentation.mystocks.di.DaggerMyStocksComponent;
 import com.sam_chordas.android.stockhawk.presentation.mystocks.di.MyStocksComponent;
-import com.sam_chordas.android.stockhawk.presentation.mystocks.di.MyStocksLoaderModule;
 import com.sam_chordas.android.stockhawk.presentation.mystocks.di.MyStocksViewModelModule;
 import com.sam_chordas.android.stockhawk.presentation.stockdetails.StockDetailsActivity;
 import com.sam_chordas.android.stockhawk.utils.Utils;
@@ -62,9 +61,9 @@ public class MyStocksActivity extends BaseActivity<MyStocksViewModel>
         mBinding = DataBindingUtil.setContentView(this, R.layout.activity_my_stocks);
         mBinding.setViewModel(mViewModel);
         setupRecyclerView();
+        checkRefreshing();
 
         getSupportLoaderManager().initLoader(CURSOR_LOADER_ID, null, this);
-        startPeriodicQueryService();
     }
 
     private void injectDependencies(@Nullable Bundle savedInstanceState) {
@@ -77,9 +76,9 @@ public class MyStocksActivity extends BaseActivity<MyStocksViewModel>
 
     private void setupRecyclerView() {
         mRecyclerAdapter = new MyStocksRecyclerAdapter(null, mViewModel);
-        mBinding.recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        mBinding.recyclerView.setHasFixedSize(true);
-        mBinding.recyclerView.setAdapter(mRecyclerAdapter);
+        mBinding.rvMyStocks.setLayoutManager(new LinearLayoutManager(this));
+        mBinding.rvMyStocks.setHasFixedSize(true);
+        mBinding.rvMyStocks.setAdapter(mRecyclerAdapter);
         final ItemTouchHelper touchHelper = new ItemTouchHelper(new ItemTouchHelper.SimpleCallback(
                 ItemTouchHelper.UP | ItemTouchHelper.DOWN,
                 ItemTouchHelper.START | ItemTouchHelper.END) {
@@ -100,22 +99,18 @@ public class MyStocksActivity extends BaseActivity<MyStocksViewModel>
                 mRecyclerAdapter.onItemDismiss(viewHolder.getAdapterPosition());
             }
         });
-        touchHelper.attachToRecyclerView(mBinding.recyclerView);
+        touchHelper.attachToRecyclerView(mBinding.rvMyStocks);
     }
 
-    private void startPeriodicQueryService() {
-        final long period = 3600L;
-        final long flex = 10L;
-
-        final PeriodicTask periodicTask = new PeriodicTask.Builder()
-                .setService(UpdateStocksTaskService.class)
-                .setTag(PERIODIC_UPDATE_SERVICE)
-                .setPeriod(period)
-                .setFlex(flex)
-                .setRequiredNetwork(Task.NETWORK_STATE_CONNECTED)
-                .setRequiresCharging(false)
-                .build();
-        GcmNetworkManager.getInstance(this).schedule(periodicTask);
+    private void checkRefreshing() {
+        // work around bug that state of swipe refresh layout can only be changed after is is drawn.
+        // TODO: remove once bug is fixed
+        mBinding.srlMyStocks.post(new Runnable() {
+            @Override
+            public void run() {
+                mBinding.srlMyStocks.setRefreshing(mViewModel.isRefreshing());
+            }
+        });
     }
 
     @Override
@@ -171,6 +166,7 @@ public class MyStocksActivity extends BaseActivity<MyStocksViewModel>
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
         if (data.moveToFirst()) {
             mViewModel.setLoading(false);
+            mViewModel.setRefreshing(false);
         }
         mRecyclerAdapter.swapCursor(data);
     }
@@ -182,7 +178,7 @@ public class MyStocksActivity extends BaseActivity<MyStocksViewModel>
 
     @Override
     protected View getSnackbarView() {
-        return mBinding.recyclerView;
+        return mBinding.rvMyStocks;
     }
 
     @Override
@@ -198,6 +194,22 @@ public class MyStocksActivity extends BaseActivity<MyStocksViewModel>
     @Override
     public void loadUpdateStocksService() {
         UpdateStocksIntentService.start(this);
+    }
+
+    @Override
+    public void loadPeriodicQueryService() {
+        final long period = 3600L;
+        final long flex = 10L;
+
+        final PeriodicTask periodicTask = new PeriodicTask.Builder()
+                .setService(UpdateStocksTaskService.class)
+                .setTag(PERIODIC_UPDATE_SERVICE)
+                .setPeriod(period)
+                .setFlex(flex)
+                .setRequiredNetwork(Task.NETWORK_STATE_CONNECTED)
+                .setRequiresCharging(false)
+                .build();
+        GcmNetworkManager.getInstance(this).schedule(periodicTask);
     }
 
     @Override

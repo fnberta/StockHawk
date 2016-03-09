@@ -19,6 +19,11 @@ public class BindingUtils {
         // class cannot be instantiated
     }
 
+    @BindingAdapter({"colorScheme"})
+    public static void setColorScheme(SwipeRefreshLayout view, int[] colorScheme) {
+        view.setColorSchemeColors(colorScheme);
+    }
+
     @BindingAdapter({"chartData"})
     public static void setChartData(LineChart view, LineData data) {
         if (data != null) {
