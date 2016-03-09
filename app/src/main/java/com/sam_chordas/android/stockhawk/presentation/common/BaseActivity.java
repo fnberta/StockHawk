@@ -1,5 +1,6 @@
 package com.sam_chordas.android.stockhawk.presentation.common;
 
+import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
@@ -17,6 +18,27 @@ public abstract class BaseActivity<T extends ViewModel> extends AppCompatActivit
 
     @Inject
     protected T mViewModel;
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+
+        mViewModel.saveState(outState);
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+
+        mViewModel.onViewVisible();
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+
+        mViewModel.onViewGone();
+    }
 
     @Override
     public void showMessage(int message) {

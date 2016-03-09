@@ -114,27 +114,6 @@ public class MyStocksActivity extends BaseActivity<MyStocksViewModel>
     }
 
     @Override
-    protected void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
-
-        mViewModel.saveState(outState);
-    }
-
-    @Override
-    protected void onStart() {
-        super.onStart();
-
-        mViewModel.onViewVisible();
-    }
-
-    @Override
-    protected void onStop() {
-        super.onStop();
-
-        mViewModel.onViewGone();
-    }
-
-    @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.my_stocks, menu);
         return true;
