@@ -5,8 +5,10 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.support.annotation.NonNull;
 
+import java.text.DateFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
+import java.util.Locale;
 
 /**
  * Created by sam_chordas on 10/8/15.
@@ -42,6 +44,17 @@ public class Utils {
         moneyFormatter.setMaximumFractionDigits(2);
 
         return moneyFormatter;
+    }
+
+    /**
+     * Returns a date formatter that formats date to the specified format.
+     *
+     * @param shortFormat whether to format in short format
+     * @return a properly configured {@link DateFormat} instance
+     */
+    public static DateFormat getDateFormatter(boolean shortFormat) {
+        return DateFormat.getDateInstance(shortFormat ? DateFormat.SHORT : DateFormat.LONG,
+                Locale.getDefault());
     }
 
     /**

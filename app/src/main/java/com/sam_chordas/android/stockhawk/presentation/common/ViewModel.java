@@ -7,7 +7,7 @@ import android.support.annotation.NonNull;
 /**
  * Created by fabio on 07.03.16.
  */
-public interface ViewModel extends Observable {
+public interface ViewModel extends Observable, BaseWorkerListener {
 
     /**
      * Saves the state of the view model in a bundle before recreation.
@@ -26,4 +26,13 @@ public interface ViewModel extends Observable {
      * and the view it references to be garbage collected.
      */
     void onViewGone();
+
+    interface ViewListener {
+
+        void showMessage(int message);
+
+        void showMessage(int message, int length);
+
+        void removeWorker(@NonNull String workerTag);
+    }
 }

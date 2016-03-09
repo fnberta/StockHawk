@@ -4,9 +4,9 @@ import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.v4.content.CursorLoader;
 
-import com.sam_chordas.android.stockhawk.domain.models.Stock;
+import com.sam_chordas.android.stockhawk.data.rest.QuoteTime;
 
-import rx.Completable;
+import rx.Observable;
 import rx.Single;
 
 /**
@@ -14,11 +14,11 @@ import rx.Single;
  */
 public interface StockRepository {
 
-    CursorLoader getMyStocksLoader();
-
     boolean updateStocks();
 
     Single<Uri> saveSymbol(@NonNull String symbol);
 
     Single<Integer> deleteStock(long rowId);
+
+    Observable<QuoteTime> getStockDataOverTime(@NonNull String stockSymbol);
 }

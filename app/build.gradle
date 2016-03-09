@@ -47,4 +47,5 @@ dependencies {
     compile 'com.squareup.okhttp3:logging-interceptor:3.0.1'
     compile 'net.simonvt.schematic:schematic:0.6.3'
     apt 'net.simonvt.schematic:schematic-compiler:0.6.3'
+    compile 'com.github.PhilJay:MPAndroidChart:v2.2.3'
 }

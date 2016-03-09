@@ -1,5 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+
 <layout
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context=".presentation.stockdetails.StockDetailsActivity"
     >
 
     <data>
@@ -8,7 +13,7 @@
 
         <variable
             name="viewModel"
-            type="com.sam_chordas.android.stockhawk.presentation.mystocks.MyStocksViewModel"
+            type="com.sam_chordas.android.stockhawk.presentation.stockdetails.StockDetailsViewModel"
             />
     </data>
 
@@ -18,11 +23,16 @@
         android:animateLayoutChanges="true"
         >
 
-        <android.support.v7.widget.RecyclerView
-            android:id="@+id/recycler_view"
+        <com.github.mikephil.charting.charts.LineChart
+            android:id="@+id/lc_stock_details"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:layout_marginBottom="@dimen/small_space"
+            android:layout_marginEnd="@dimen/key_line_1"
+            android:layout_marginStart="@dimen/key_line_1"
+            android:layout_marginTop="@dimen/small_space"
             android:visibility="@{viewModel.loading ? View.GONE : View.VISIBLE}"
+            app:chartData="@{viewModel.chartData}"
             />
 
         <LinearLayout
@@ -45,20 +55,12 @@
                 android:id="@+id/tv_progress_message"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/progress_loading_initial"
+                android:text="@string/progress_loading_details"
                 />
 
         </LinearLayout>
 
-        <android.support.design.widget.FloatingActionButton
-            android:id="@+id/fab"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="bottom|end"
-            android:layout_margin="@dimen/normal_space"
-            android:onClick="@{viewModel.onFabClick}"
-            android:src="@drawable/ic_add_white_24dp"
-            />
     </android.support.design.widget.CoordinatorLayout>
 
 </layout>
+

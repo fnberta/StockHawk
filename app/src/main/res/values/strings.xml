@@ -15,4 +15,6 @@
     <string name="progress_loading_initial">Loading initial stocks…</string>
     <string name="snackbar_error_unknown">Unknown error occurred</string>
     <string name="snackbar_error_add_stock_not_found">Symbol not found</string>
+    <string name="snackbar_error_stock_details">Failed to load stock details</string>
+    <string name="progress_loading_details">Loading stock details…</string>
 </resources>

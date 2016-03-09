@@ -6,16 +6,20 @@ import android.support.annotation.CallSuper;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
+import com.sam_chordas.android.stockhawk.R;
+
 import rx.subscriptions.CompositeSubscription;
 
 /**
  * Created by fabio on 07.03.16.
  */
-public class ViewModelBaseImpl extends BaseObservable implements ViewModel {
+public class ViewModelBaseImpl<T extends ViewModel.ViewListener> extends BaseObservable implements ViewModel {
 
+    protected T mView;
     private CompositeSubscription mSubscriptions = new CompositeSubscription();
 
-    public ViewModelBaseImpl(@Nullable Bundle savedState) {
+    public ViewModelBaseImpl(@Nullable Bundle savedState, T view) {
+        mView = view;
     }
 
     @Override
@@ -34,6 +38,12 @@ public class ViewModelBaseImpl extends BaseObservable implements ViewModel {
         if (mSubscriptions.hasSubscriptions()) {
             mSubscriptions.unsubscribe();
         }
+    }
+
+    @Override
+    public void onWorkerError(@NonNull String workerTag) {
+        mView.removeWorker(workerTag);
+        mView.showMessage(R.string.snackbar_error_unknown);
     }
 
     protected CompositeSubscription getSubscriptions() {

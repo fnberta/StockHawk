@@ -7,24 +7,29 @@ import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
 import android.support.annotation.NonNull;
-import android.support.v4.content.CursorLoader;
 
 import com.sam_chordas.android.stockhawk.data.provider.QuoteColumns;
 import com.sam_chordas.android.stockhawk.data.provider.QuoteProvider;
 import com.sam_chordas.android.stockhawk.data.rest.Quote;
+import com.sam_chordas.android.stockhawk.data.rest.QuoteTime;
+import com.sam_chordas.android.stockhawk.data.rest.YahooQueryDetailsResult;
 import com.sam_chordas.android.stockhawk.data.rest.YahooFinance;
 import com.sam_chordas.android.stockhawk.data.rest.YahooQueryResult;
 import com.sam_chordas.android.stockhawk.domain.repositories.StockRepository;
 
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 import retrofit2.Call;
 import retrofit2.Response;
+import rx.Observable;
 import rx.Single;
 import rx.android.schedulers.AndroidSchedulers;
-import rx.exceptions.Exceptions;
 import rx.functions.Func1;
 import rx.schedulers.Schedulers;
 
@@ -39,23 +44,6 @@ public class StockRepositoryImpl implements StockRepository {
     public StockRepositoryImpl(@NonNull Application appContext, @NonNull YahooFinance yahooFinance) {
         mAppContext = appContext;
         mYahooFinance = yahooFinance;
-    }
-
-    @Override
-    public CursorLoader getMyStocksLoader() {
-        return new CursorLoader(
-                mAppContext,
-                QuoteProvider.Quotes.CONTENT_URI,
-                new String[]{
-                        QuoteColumns._ID,
-                        QuoteColumns.SYMBOL,
-                        QuoteColumns.BID_PRICE,
-                        QuoteColumns.PERCENT_CHANGE,
-                        QuoteColumns.CHANGE},
-                null,
-                null,
-                null
-        );
     }
 
     @Override
@@ -80,7 +68,7 @@ public class StockRepositoryImpl implements StockRepository {
     @NonNull
     private StringBuilder getSelection(@NonNull Cursor cursor) {
         final StringBuilder selection = new StringBuilder();
-        selection.append("select * from yahoo.finance.quotes where symbol in (");
+        selection.append("select symbol, Bid, Change, ChangeinPercent from yahoo.finance.quotes where symbol in (");
         do {
             selection
                     .append("\"")
@@ -125,7 +113,7 @@ public class StockRepositoryImpl implements StockRepository {
         final ArrayList<ContentProviderOperation> ops = new ArrayList<>();
         final YahooQueryResult.Query query = yahooQueryResult.getQuery();
         final YahooQueryResult.Results results = query.getResults();
-        final List<Quote> quotes = results.getQuote();
+        final List<Quote> quotes = results.getQuotes();
         if (!quotes.isEmpty()) {
             for (Quote quote : quotes) {
                 if (update) {
@@ -147,7 +135,7 @@ public class StockRepositoryImpl implements StockRepository {
 
 
     private boolean insertInitial() {
-        final String selection = ("select * from yahoo.finance.quotes where symbol in " +
+        final String selection = ("select symbol, Bid, Change, ChangeinPercent from yahoo.finance.quotes where symbol in " +
                 "(\"YHOO\",\"AAPL\",\"GOOG\",\"MSFT\")");
         final Call<YahooQueryResult> request = mYahooFinance.getQuotes(selection);
         final Response<YahooQueryResult> response;
@@ -202,38 +190,32 @@ public class StockRepositoryImpl implements StockRepository {
                         return cursor.moveToFirst();
                     }
                 })
-                .flatMap(new Func1<Boolean, Single<Uri>>() {
+                .flatMap(new Func1<Boolean, Single<YahooQueryResult>>() {
                     @Override
-                    public Single<Uri> call(Boolean exists) {
+                    public Single<YahooQueryResult> call(Boolean exists) {
                         if (exists) {
-                            return Single.error(new QuoteException(QuoteException.Code.ALREADY_SAVED));
+                            return Single.error(new AlreadySavedException());
                         }
 
-                        final String selection = ("select * from yahoo.finance.quotes where symbol in " +
+                        final String selection = ("select symbol, Bid, Change, ChangeinPercent from yahoo.finance.quotes where symbol in " +
                                 "(\"" + stockSymbol + "\")");
-                        return mYahooFinance.getQuote(selection)
-                                .map(new Func1<YahooQueryResult, Quote>() {
-                                    @Override
-                                    public Quote call(YahooQueryResult yahooQueryResult) {
-                                        final YahooQueryResult.Query query = yahooQueryResult.getQuery();
-                                        final YahooQueryResult.Results results = query.getResults();
-                                        final List<Quote> quotes = results.getQuote();
-                                        return quotes.get(0);
-                                    }
-                                })
-                                .map(new Func1<Quote, Uri>() {
-                                    @Override
-                                    public Uri call(Quote quote) {
-                                        final ContentResolver contentResolver = mAppContext.getApplicationContext().getContentResolver();
-                                        return contentResolver.insert(QuoteProvider.Quotes.CONTENT_URI, quote.getContentValuesEntry());
-                                    }
-                                })
-                                .onErrorReturn(new Func1<Throwable, Uri>() {
-                                    @Override
-                                    public Uri call(Throwable throwable) {
-                                        throw Exceptions.propagate(new QuoteException(QuoteException.Code.SYMBOL_NOT_FOUND));
-                                    }
-                                });
+                        return mYahooFinance.getQuote(selection);
+                    }
+                })
+                .map(new Func1<YahooQueryResult, Quote>() {
+                    @Override
+                    public Quote call(YahooQueryResult yahooQueryResult) {
+                        final YahooQueryResult.Query query = yahooQueryResult.getQuery();
+                        final YahooQueryResult.Results results = query.getResults();
+                        final List<Quote> quotes = results.getQuotes();
+                        return quotes.get(0);
+                    }
+                })
+                .map(new Func1<Quote, Uri>() {
+                    @Override
+                    public Uri call(Quote quote) {
+                        final ContentResolver contentResolver = mAppContext.getApplicationContext().getContentResolver();
+                        return contentResolver.insert(QuoteProvider.Quotes.CONTENT_URI, quote.getContentValuesEntry());
                     }
                 });
     }
@@ -251,6 +233,28 @@ public class StockRepositoryImpl implements StockRepository {
                                 null,
                                 null
                         );
+                    }
+                });
+    }
+
+    @Override
+    public Observable<QuoteTime> getStockDataOverTime(@NonNull String stockSymbol) {
+        final SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+        final Calendar cal = Calendar.getInstance();
+        final Date today = cal.getTime();
+        cal.add(Calendar.MONTH, -6);
+        final Date sixMonthBack = cal.getTime();
+
+        final String selection = ("select Symbol, Date, Adj_Close from yahoo.finance.historicaldata where symbol in " +
+                "(\"" + stockSymbol + "\") and startDate = \"" + formatter.format(sixMonthBack) +
+                "\" and endDate = \"" + formatter.format(today) + "\"");
+        return mYahooFinance.getQuoteDetails(selection)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .flatMapObservable(new Func1<YahooQueryDetailsResult, Observable<? extends QuoteTime>>() {
+                    @Override
+                    public Observable<? extends QuoteTime> call(YahooQueryDetailsResult yahooQueryDetailsResult) {
+                        return Observable.from(yahooQueryDetailsResult.getQuery().getResults().getQuoteTimes());
                     }
                 });
     }

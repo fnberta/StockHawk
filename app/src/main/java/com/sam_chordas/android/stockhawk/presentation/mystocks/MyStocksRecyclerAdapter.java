@@ -141,6 +141,11 @@ public class MyStocksRecyclerAdapter extends RecyclerView.Adapter<MyStocksRecycl
         // TODO: implement reordering
     }
 
+    public String getSymbolForPosition(int position) {
+        mCursor.moveToPosition(position);
+        return mCursor.getString(mCursor.getColumnIndex(QuoteColumns.SYMBOL));
+    }
+
     public interface AdapterListener {
         void onStockItemClick(int position);
     }

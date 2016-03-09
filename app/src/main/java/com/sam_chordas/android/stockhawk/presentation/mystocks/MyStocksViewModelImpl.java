@@ -11,31 +11,29 @@ import android.view.View;
 
 import com.sam_chordas.android.stockhawk.BR;
 import com.sam_chordas.android.stockhawk.R;
-import com.sam_chordas.android.stockhawk.data.repositories.QuoteException;
+import com.sam_chordas.android.stockhawk.data.repositories.AlreadySavedException;
 import com.sam_chordas.android.stockhawk.domain.repositories.StockRepository;
 import com.sam_chordas.android.stockhawk.presentation.common.ViewModelBaseImpl;
 
 import rx.Single;
 import rx.SingleSubscriber;
-import rx.android.schedulers.AndroidSchedulers;
-import rx.schedulers.Schedulers;
 
 /**
  * Created by fabio on 07.03.16.
  */
-public class MyStocksViewModelImpl extends ViewModelBaseImpl implements MyStocksViewModel {
+public class MyStocksViewModelImpl extends ViewModelBaseImpl<MyStocksViewModel.ViewListener> implements MyStocksViewModel {
 
     private static final String STATE_LOADING = "STATE_LOADING";
     private static final String STATE_SHOW_PERCENT = "STATE_SHOW_PERCENT";
-    private MyStocksViewModel.ViewListener mView;
     private StockRepository mStockRepo;
     private boolean mLoading;
     private boolean mShowPercent;
 
-    public MyStocksViewModelImpl(@Nullable Bundle savedState, @NonNull ViewListener view,
+    public MyStocksViewModelImpl(@Nullable Bundle savedState,
+                                 @NonNull MyStocksViewModel.ViewListener view,
                                  @NonNull StockRepository stockRepo) {
-        super(savedState);
-        mView = view;
+        super(savedState, view);
+
         mStockRepo = stockRepo;
 
         if (savedState != null) {
@@ -83,7 +81,7 @@ public class MyStocksViewModelImpl extends ViewModelBaseImpl implements MyStocks
 
     @Override
     public void onStockItemClick(int position) {
-        // TODO: load details screen
+        mView.showStockDetailsScreen(position);
     }
 
     @Override
@@ -92,7 +90,7 @@ public class MyStocksViewModelImpl extends ViewModelBaseImpl implements MyStocks
                 .subscribe(new SingleSubscriber<Integer>() {
                     @Override
                     public void onSuccess(Integer value) {
-                        mView.showMessage(R.string.snackbar_stock_removed, Snackbar.LENGTH_LONG);
+                        // do nothing
                     }
 
                     @Override
@@ -123,42 +121,20 @@ public class MyStocksViewModelImpl extends ViewModelBaseImpl implements MyStocks
                     @Override
                     public void onSuccess(Uri value) {
                         mView.removeWorker(workerTag);
-                        mView.showMessage(R.string.snackbar_stock_added, Snackbar.LENGTH_LONG);
+                        mView.showMessage(R.string.snackbar_stock_added);
                     }
 
                     @Override
                     public void onError(Throwable error) {
                         mView.removeWorker(workerTag);
-
-                        try {
-                            showAppropriateErrorMessage((QuoteException) error);
-                        } catch (ClassCastException e) {
-                            mView.showMessage(R.string.snackbar_error_add_stock, Snackbar.LENGTH_LONG);
+                        if (error instanceof AlreadySavedException) {
+                            mView.showMessage(R.string.snackbar_error_add_stock_already_saved);
+                        } else {
+                            mView.showMessage(R.string.snackbar_error_add_stock_not_found);
                         }
-
                     }
                 })
         );
-    }
-
-    private void showAppropriateErrorMessage(QuoteException exception) {
-        final int code = exception.getCode();
-        switch (code) {
-            case QuoteException.Code.ALREADY_SAVED:
-                mView.showMessage(R.string.snackbar_error_add_stock_already_saved, Snackbar.LENGTH_LONG);
-                break;
-            case QuoteException.Code.SYMBOL_NOT_FOUND:
-                mView.showMessage(R.string.snackbar_error_add_stock_not_found, Snackbar.LENGTH_LONG);
-                break;
-            default:
-                mView.showMessage(R.string.snackbar_error_add_stock, Snackbar.LENGTH_LONG);
-        }
-    }
-
-    @Override
-    public void onWorkerError(@NonNull String workerTag) {
-        mView.removeWorker(workerTag);
-        mView.showMessage(R.string.snackbar_error_unknown, Snackbar.LENGTH_LONG);
     }
 
     @Override
@@ -166,7 +142,7 @@ public class MyStocksViewModelImpl extends ViewModelBaseImpl implements MyStocks
         if (mView.isNetworkAvailable()) {
             mView.showFindStockDialog();
         } else {
-            mView.showMessage(R.string.snackbar_no_network, Snackbar.LENGTH_LONG);
+            mView.showMessage(R.string.snackbar_no_network);
         }
     }
 }

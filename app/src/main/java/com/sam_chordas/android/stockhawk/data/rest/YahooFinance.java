@@ -15,4 +15,7 @@ public interface YahooFinance {
 
     @GET("yql?format=json&env=store%3A%2F%2Fdatatables.org%2Falltableswithkeys&callback=")
     Call<YahooQueryResult> getQuotes(@Query("q") String selection);
+
+    @GET("yql?format=json&env=store%3A%2F%2Fdatatables.org%2Falltableswithkeys&callback=")
+    Single<YahooQueryDetailsResult> getQuoteDetails(@Query("q") String selection);
 }

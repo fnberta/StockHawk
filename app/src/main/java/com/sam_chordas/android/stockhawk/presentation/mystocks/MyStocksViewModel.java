@@ -36,12 +36,8 @@ public interface MyStocksViewModel extends ViewModel, MyStocksRecyclerAdapter.Ad
 
     void onChangeUnitsMenuClick();
 
-    interface ViewListener {
+    interface ViewListener extends ViewModel.ViewListener {
         boolean isNetworkAvailable();
-
-        void showMessage(int message, int length);
-
-        void removeWorker(@NonNull String workerTag);
 
         void showFindStockDialog();
 
@@ -50,5 +46,7 @@ public interface MyStocksViewModel extends ViewModel, MyStocksRecyclerAdapter.Ad
         void loadSaveStockWorker(@NonNull String stockSymbol);
 
         void notifyItemsChanged();
+
+        void showStockDetailsScreen(int position);
     }
 }

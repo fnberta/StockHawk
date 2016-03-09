@@ -5,7 +5,7 @@ import com.google.gson.annotations.SerializedName;
 import java.util.ArrayList;
 import java.util.List;
 
-public class YahooQueryResult {
+public class YahooQueryDetailsResult {
 
     @SerializedName("query")
     private Query mQuery;
@@ -45,14 +45,14 @@ public class YahooQueryResult {
     public static class Results {
 
         @SerializedName("quote")
-        private List<Quote> mQuotes = new ArrayList<>();
+        private List<QuoteTime> mQuoteTimes = new ArrayList<>();
 
-        public List<Quote> getQuotes() {
-            return mQuotes;
+        public List<QuoteTime> getQuoteTimes() {
+            return mQuoteTimes;
         }
 
-        public void setQuotes(List<Quote> quotes) {
-            mQuotes = quotes;
+        public void setQuoteTimes(List<QuoteTime> quoteTimes) {
+            mQuoteTimes = quoteTimes;
         }
     }
 }
