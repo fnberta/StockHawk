@@ -6,9 +6,9 @@ package com.sam_chordas.android.stockhawk.presentation.mystocks.di;
 
 import android.support.v4.content.CursorLoader;
 
-import com.sam_chordas.android.stockhawk.data.di.ApplicationComponent;
-import com.sam_chordas.android.stockhawk.data.di.RepositoriesModule;
-import com.sam_chordas.android.stockhawk.data.di.scopes.PerActivity;
+import com.sam_chordas.android.stockhawk.di.ApplicationComponent;
+import com.sam_chordas.android.stockhawk.di.RepositoriesModule;
+import com.sam_chordas.android.stockhawk.di.scopes.PerActivity;
 import com.sam_chordas.android.stockhawk.presentation.mystocks.MyStocksActivity;
 
 import dagger.Component;

@@ -2,6 +2,7 @@ package com.sam_chordas.android.stockhawk.presentation.common;
 
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.annotation.StringRes;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -41,12 +42,12 @@ public abstract class BaseActivity<T extends ViewModel> extends AppCompatActivit
     }
 
     @Override
-    public void showMessage(int message) {
+    public void showMessage(@StringRes int message) {
         showMessage(message, Snackbar.LENGTH_LONG);
     }
 
     @Override
-    public void showMessage(int message, int length) {
+    public void showMessage(@StringRes int message, int length) {
         Snackbar.make(getSnackbarView(), message, length).show();
     }
 

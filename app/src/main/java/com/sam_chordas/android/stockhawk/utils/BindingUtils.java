@@ -28,7 +28,7 @@ public class BindingUtils {
     public static void setChartData(LineChart view, LineData data) {
         if (data != null) {
             view.setData(data);
-            view.animateX(1000);
+            view.animateX(500);
         }
     }
 }

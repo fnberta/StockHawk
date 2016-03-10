@@ -6,15 +6,19 @@
     <string name="dialog_title_symbol_search">Symbol search</string>
     <string name="dialog_message_symbol_search">Search for a stock symbol</string>
     <string name="hint_stock_symbol">FB</string>
-    <string name="widget_title">Today\'s Market</string>
-    <string name="snackbar_no_network">Uh-oh! This app requires an internet connection</string>
+    <string name="widget_title">My stock symbols</string>
+    <string name="snackbar_no_network">No internet connection. Quotes may be out of date!</string>
     <string name="snackbar_error_add_stock_already_saved">This stock is already saved</string>
     <string name="snackbar_error_add_stock">Failed to add new stock</string>
     <string name="snackbar_stock_removed">Removed stock symbol</string>
-    <string name="snackbar_stock_added">Added new stock</string>
-    <string name="progress_loading_initial">Loading initial stocks…</string>
+    <string name="snackbar_stock_added">Added new stock symbol</string>
+    <string name="progress_loading_initial">Loading initial stock symbols…</string>
     <string name="snackbar_error_unknown">Unknown error occurred</string>
     <string name="snackbar_error_add_stock_not_found">Symbol not found</string>
-    <string name="snackbar_error_stock_details">Failed to load stock details</string>
-    <string name="progress_loading_details">Loading stock details…</string>
+    <string name="snackbar_error_stock_details">Failed to load stock symbol details</string>
+    <string name="progress_loading_details">Loading stock symbol details…</string>
+    <string name="desc_my_stocks_add_fab">Find and save new stock symbol</string>
+    <string name="desc_stock_value_time">Value over last 6 month</string>
+    <string name="widget_empty">No stocks</string>
+    <string name="progress_saving_symbol">Saving new symbol…</string>
 </resources>

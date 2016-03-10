@@ -19,6 +19,7 @@
         android:orientation="horizontal"
         android:paddingEnd="@dimen/key_line_1"
         android:paddingStart="@dimen/key_line_1"
+        android:background="?selectableItemBackground"
         >
 
         <TextView

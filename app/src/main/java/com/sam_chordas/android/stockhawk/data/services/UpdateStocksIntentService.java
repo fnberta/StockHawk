@@ -6,8 +6,8 @@ import android.content.Intent;
 import android.support.annotation.NonNull;
 
 import com.sam_chordas.android.stockhawk.StockHawk;
-import com.sam_chordas.android.stockhawk.data.di.RepositoriesModule;
 import com.sam_chordas.android.stockhawk.data.services.di.DaggerUpdateStocksServiceComponent;
+import com.sam_chordas.android.stockhawk.di.RepositoriesModule;
 import com.sam_chordas.android.stockhawk.domain.repositories.StockRepository;
 
 import javax.inject.Inject;
@@ -32,7 +32,6 @@ public class UpdateStocksIntentService extends IntentService {
     @Override
     protected void onHandleIntent(Intent intent) {
         injectDependencies();
-
         mStockRepo.updateStocks();
     }
 

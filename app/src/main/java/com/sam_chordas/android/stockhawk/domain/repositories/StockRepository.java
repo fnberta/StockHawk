@@ -1,5 +1,6 @@
 package com.sam_chordas.android.stockhawk.domain.repositories;
 
+import android.database.Cursor;
 import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.v4.content.CursorLoader;
@@ -21,4 +22,10 @@ public interface StockRepository {
     Single<Integer> deleteStock(long rowId);
 
     Observable<QuoteTime> getStockDataOverTime(@NonNull String stockSymbol);
+
+    Cursor getStocks();
+
+    boolean showPercentages();
+
+    void toggleShowPercentages();
 }

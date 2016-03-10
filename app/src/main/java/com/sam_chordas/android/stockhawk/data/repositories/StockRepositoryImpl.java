@@ -1,19 +1,22 @@
 package com.sam_chordas.android.stockhawk.data.repositories;
 
-import android.app.Application;
+import android.appwidget.AppWidgetManager;
+import android.content.ComponentName;
 import android.content.ContentProviderOperation;
 import android.content.ContentResolver;
-import android.content.Context;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.net.Uri;
 import android.support.annotation.NonNull;
 
+import com.sam_chordas.android.stockhawk.R;
 import com.sam_chordas.android.stockhawk.data.provider.QuoteColumns;
 import com.sam_chordas.android.stockhawk.data.provider.QuoteProvider;
+import com.sam_chordas.android.stockhawk.data.repositories.QuoteException.Code;
 import com.sam_chordas.android.stockhawk.data.rest.Quote;
 import com.sam_chordas.android.stockhawk.data.rest.QuoteTime;
-import com.sam_chordas.android.stockhawk.data.rest.YahooQueryDetailsResult;
 import com.sam_chordas.android.stockhawk.data.rest.YahooFinance;
+import com.sam_chordas.android.stockhawk.data.rest.YahooQueryDetailsResult;
 import com.sam_chordas.android.stockhawk.data.rest.YahooQueryResult;
 import com.sam_chordas.android.stockhawk.domain.repositories.StockRepository;
 
@@ -30,6 +33,7 @@ import retrofit2.Response;
 import rx.Observable;
 import rx.Single;
 import rx.android.schedulers.AndroidSchedulers;
+import rx.functions.Action1;
 import rx.functions.Func1;
 import rx.schedulers.Schedulers;
 
@@ -38,31 +42,50 @@ import rx.schedulers.Schedulers;
  */
 public class StockRepositoryImpl implements StockRepository {
 
-    private Context mAppContext;
+    private static final String SHOW_PERCENTAGE = "SHOW_PERCENTAGE";
+    private ContentResolver mContentResolver;
+    private AppWidgetManager mAppWidgetManager;
+    private ComponentName mWidgetProviderComp;
+    private SharedPreferences mSharedPrefs;
     private YahooFinance mYahooFinance;
 
-    public StockRepositoryImpl(@NonNull Application appContext, @NonNull YahooFinance yahooFinance) {
-        mAppContext = appContext;
+    public StockRepositoryImpl(@NonNull ContentResolver contentResolver,
+                               @NonNull AppWidgetManager appWidgetManager,
+                               @NonNull ComponentName widgetProviderComp,
+                               @NonNull SharedPreferences sharedPrefs,
+                               @NonNull YahooFinance yahooFinance) {
+        mContentResolver = contentResolver;
+        mAppWidgetManager = appWidgetManager;
+        mWidgetProviderComp = widgetProviderComp;
+        mSharedPrefs = sharedPrefs;
         mYahooFinance = yahooFinance;
     }
 
     @Override
     public boolean updateStocks() {
-        final Cursor cursor = mAppContext.getContentResolver()
-                .query(QuoteProvider.Quotes.CONTENT_URI,
-                        new String[]{QuoteColumns.SYMBOL},
-                        null,
-                        null,
-                        null
-                );
+        boolean successful;
+
+        final Cursor cursor = mContentResolver.query(
+                QuoteProvider.Quotes.CONTENT_URI,
+                new String[]{QuoteColumns.SYMBOL},
+                null,
+                null,
+                null
+        );
 
         if (cursor != null && cursor.moveToFirst()) {
             final StringBuilder selection = getSelection(cursor);
             cursor.close();
-            return updateExisting(selection.toString());
+            successful = updateExisting(selection.toString());
+        } else {
+            successful = insertInitial();
         }
 
-        return insertInitial();
+        if (successful) {
+            updateWidget();
+        }
+
+        return successful;
     }
 
     @NonNull
@@ -97,9 +120,8 @@ public class StockRepositoryImpl implements StockRepository {
         }
 
         final ArrayList<ContentProviderOperation> ops = getOperations(yahooQueryResult, true);
-        final ContentResolver contentResolver = mAppContext.getApplicationContext().getContentResolver();
         try {
-            contentResolver.applyBatch(QuoteProvider.CONTENT_AUTHORITY, ops);
+            mContentResolver.applyBatch(QuoteProvider.CONTENT_AUTHORITY, ops);
         } catch (Throwable t) {
             return false;
         }
@@ -150,9 +172,8 @@ public class StockRepositoryImpl implements StockRepository {
         }
 
         final ArrayList<ContentProviderOperation> ops = getOperations(yahooQueryResult, false);
-        final ContentResolver contentResolver = mAppContext.getApplicationContext().getContentResolver();
         try {
-            contentResolver.applyBatch(QuoteProvider.CONTENT_AUTHORITY, ops);
+            mContentResolver.applyBatch(QuoteProvider.CONTENT_AUTHORITY, ops);
         } catch (Throwable t) {
             return false;
         }
@@ -167,15 +188,19 @@ public class StockRepositoryImpl implements StockRepository {
                 .build();
     }
 
+    private void updateWidget() {
+        final int[] appWidgetIds = mAppWidgetManager.getAppWidgetIds(mWidgetProviderComp);
+        mAppWidgetManager.notifyAppWidgetViewDataChanged(appWidgetIds, R.id.lv_widget);
+    }
+
     @Override
     public Single<Uri> saveSymbol(@NonNull final String stockSymbol) {
         return Single.just(stockSymbol)
                 .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
                 .map(new Func1<String, Cursor>() {
                     @Override
-                    public Cursor call(String stockSymbol) {
-                        return mAppContext.getContentResolver().query(
+                    public Cursor call(String s) {
+                        return mContentResolver.query(
                                 QuoteProvider.Quotes.CONTENT_URI,
                                 new String[]{QuoteColumns.SYMBOL},
                                 QuoteColumns.SYMBOL + "= ?",
@@ -194,7 +219,7 @@ public class StockRepositoryImpl implements StockRepository {
                     @Override
                     public Single<YahooQueryResult> call(Boolean exists) {
                         if (exists) {
-                            return Single.error(new AlreadySavedException());
+                            return Single.error(new QuoteException(Code.ALREADY_SAVED));
                         }
 
                         final String selection = ("select symbol, Bid, Change, ChangeinPercent from yahoo.finance.quotes where symbol in " +
@@ -211,11 +236,23 @@ public class StockRepositoryImpl implements StockRepository {
                         return quotes.get(0);
                     }
                 })
-                .map(new Func1<Quote, Uri>() {
+                .flatMap(new Func1<Quote, Single<? extends Uri>>() {
                     @Override
-                    public Uri call(Quote quote) {
-                        final ContentResolver contentResolver = mAppContext.getApplicationContext().getContentResolver();
-                        return contentResolver.insert(QuoteProvider.Quotes.CONTENT_URI, quote.getContentValuesEntry());
+                    public Single<? extends Uri> call(Quote quote) {
+                        if (quote.getBid() == 0) {
+                            return Single.error(new QuoteException(Code.SYMBOL_NOT_FOUND));
+                        }
+
+                        return Single.just(mContentResolver.insert(
+                                QuoteProvider.Quotes.CONTENT_URI,
+                                quote.getContentValuesEntry()));
+                    }
+                })
+                .observeOn(AndroidSchedulers.mainThread())
+                .doOnSuccess(new Action1<Uri>() {
+                    @Override
+                    public void call(Uri uri) {
+                        updateWidget();
                     }
                 });
     }
@@ -224,15 +261,21 @@ public class StockRepositoryImpl implements StockRepository {
     public Single<Integer> deleteStock(final long rowId) {
         return Single.just(rowId)
                 .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
                 .map(new Func1<Long, Integer>() {
                     @Override
                     public Integer call(Long rowId) {
-                        return mAppContext.getContentResolver().delete(
+                        return mContentResolver.delete(
                                 QuoteProvider.Quotes.withId(rowId),
                                 null,
                                 null
                         );
+                    }
+                })
+                .observeOn(AndroidSchedulers.mainThread())
+                .doOnSuccess(new Action1<Integer>() {
+                    @Override
+                    public void call(Integer integer) {
+                        updateWidget();
                     }
                 });
     }
@@ -250,12 +293,42 @@ public class StockRepositoryImpl implements StockRepository {
                 "\" and endDate = \"" + formatter.format(today) + "\"");
         return mYahooFinance.getQuoteDetails(selection)
                 .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
                 .flatMapObservable(new Func1<YahooQueryDetailsResult, Observable<? extends QuoteTime>>() {
                     @Override
                     public Observable<? extends QuoteTime> call(YahooQueryDetailsResult yahooQueryDetailsResult) {
                         return Observable.from(yahooQueryDetailsResult.getQuery().getResults().getQuoteTimes());
                     }
-                });
+                })
+                .observeOn(AndroidSchedulers.mainThread());
+    }
+
+    @Override
+    public Cursor getStocks() {
+        return mContentResolver.query(
+                QuoteProvider.Quotes.CONTENT_URI,
+                new String[]{
+                        QuoteColumns._ID,
+                        QuoteColumns.SYMBOL,
+                        QuoteColumns.BID_PRICE,
+                        QuoteColumns.PERCENT_CHANGE,
+                        QuoteColumns.CHANGE},
+                null,
+                null,
+                null
+        );
+    }
+
+    @Override
+    public boolean showPercentages() {
+        return mSharedPrefs.getBoolean(SHOW_PERCENTAGE, true);
+    }
+
+    @Override
+    public void toggleShowPercentages() {
+        final boolean showPercentages = showPercentages();
+        mSharedPrefs.edit()
+                .putBoolean(SHOW_PERCENTAGE, !showPercentages)
+                .apply();
+        updateWidget();
     }
 }

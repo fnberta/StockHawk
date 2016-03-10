@@ -4,9 +4,9 @@
 
 package com.sam_chordas.android.stockhawk.presentation.stockdetails.di;
 
-import com.sam_chordas.android.stockhawk.data.di.ApplicationComponent;
-import com.sam_chordas.android.stockhawk.data.di.RepositoriesModule;
-import com.sam_chordas.android.stockhawk.data.di.scopes.PerActivity;
+import com.sam_chordas.android.stockhawk.di.ApplicationComponent;
+import com.sam_chordas.android.stockhawk.di.RepositoriesModule;
+import com.sam_chordas.android.stockhawk.di.scopes.PerActivity;
 import com.sam_chordas.android.stockhawk.presentation.stockdetails.StockDetailsActivity;
 import com.sam_chordas.android.stockhawk.presentation.stockdetails.StockDetailsLoader;
 

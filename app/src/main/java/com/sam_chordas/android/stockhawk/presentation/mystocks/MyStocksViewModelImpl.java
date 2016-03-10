@@ -12,7 +12,8 @@ import android.view.View;
 
 import com.sam_chordas.android.stockhawk.BR;
 import com.sam_chordas.android.stockhawk.R;
-import com.sam_chordas.android.stockhawk.data.repositories.AlreadySavedException;
+import com.sam_chordas.android.stockhawk.data.repositories.QuoteException;
+import com.sam_chordas.android.stockhawk.data.repositories.QuoteException.Code;
 import com.sam_chordas.android.stockhawk.domain.repositories.StockRepository;
 import com.sam_chordas.android.stockhawk.presentation.common.ViewModelBaseImpl;
 
@@ -22,15 +23,14 @@ import rx.SingleSubscriber;
 /**
  * Created by fabio on 07.03.16.
  */
-public class MyStocksViewModelImpl extends ViewModelBaseImpl<MyStocksViewModel.ViewListener> implements MyStocksViewModel {
+public class MyStocksViewModelImpl extends ViewModelBaseImpl<MyStocksViewModel.ViewListener>
+        implements MyStocksViewModel {
 
     private static final String STATE_LOADING = "STATE_LOADING";
     private static final String STATE_REFRESHING = "STATE_REFRESHING";
-    private static final String STATE_SHOW_PERCENT = "STATE_SHOW_PERCENT";
     private StockRepository mStockRepo;
     private boolean mLoading;
     private boolean mRefreshing;
-    private boolean mShowPercent;
 
     public MyStocksViewModelImpl(@Nullable Bundle savedState,
                                  @NonNull MyStocksViewModel.ViewListener view,
@@ -42,10 +42,8 @@ public class MyStocksViewModelImpl extends ViewModelBaseImpl<MyStocksViewModel.V
         if (savedState != null) {
             mLoading = savedState.getBoolean(STATE_LOADING);
             mRefreshing = savedState.getBoolean(STATE_REFRESHING);
-            mShowPercent = savedState.getBoolean(STATE_SHOW_PERCENT);
         } else {
             mLoading = true;
-            mShowPercent = true;
         }
     }
 
@@ -55,7 +53,6 @@ public class MyStocksViewModelImpl extends ViewModelBaseImpl<MyStocksViewModel.V
 
         outState.putBoolean(STATE_LOADING, mLoading);
         outState.putBoolean(STATE_REFRESHING, mRefreshing);
-        outState.putBoolean(STATE_SHOW_PERCENT, mShowPercent);
     }
 
     @Bindable
@@ -80,11 +77,6 @@ public class MyStocksViewModelImpl extends ViewModelBaseImpl<MyStocksViewModel.V
     public void setRefreshing(boolean refreshing) {
         mRefreshing = refreshing;
         notifyPropertyChanged(BR.refreshing);
-    }
-
-    @Override
-    public boolean isShowPercent() {
-        return mShowPercent;
     }
 
     @Override
@@ -123,6 +115,7 @@ public class MyStocksViewModelImpl extends ViewModelBaseImpl<MyStocksViewModel.V
     @Override
     public void onStockEntered(@NonNull final String stockSymbol) {
         if (!TextUtils.isEmpty(stockSymbol)) {
+            mView.showProgressDialog(R.string.progress_saving_symbol);
             mView.loadSaveStockWorker(stockSymbol);
         }
     }
@@ -134,16 +127,27 @@ public class MyStocksViewModelImpl extends ViewModelBaseImpl<MyStocksViewModel.V
                     @Override
                     public void onSuccess(Uri value) {
                         mView.removeWorker(workerTag);
+                        mView.hideProgressDialog();
                         mView.showMessage(R.string.snackbar_stock_added);
                     }
 
                     @Override
                     public void onError(Throwable error) {
                         mView.removeWorker(workerTag);
-                        if (error instanceof AlreadySavedException) {
-                            mView.showMessage(R.string.snackbar_error_add_stock_already_saved);
+                        mView.hideProgressDialog();
+
+                        if (error instanceof QuoteException) {
+                            @Code final int code = ((QuoteException) error).getCode();
+                            switch (code) {
+                                case Code.ALREADY_SAVED:
+                                    mView.showMessage(R.string.snackbar_error_add_stock_already_saved);
+                                    break;
+                                case Code.SYMBOL_NOT_FOUND:
+                                    mView.showMessage(R.string.snackbar_error_add_stock_not_found);
+                                    break;
+                            }
                         } else {
-                            mView.showMessage(R.string.snackbar_error_add_stock_not_found);
+                            mView.showMessage(R.string.snackbar_error_add_stock);
                         }
                     }
                 })
@@ -171,7 +175,7 @@ public class MyStocksViewModelImpl extends ViewModelBaseImpl<MyStocksViewModel.V
 
     @Override
     public void onChangeUnitsMenuClick() {
-        mShowPercent = !mShowPercent;
+        mStockRepo.toggleShowPercentages();
         mView.notifyItemsChanged();
     }
 }

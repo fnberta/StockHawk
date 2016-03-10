@@ -67,7 +67,7 @@ public class StockDetailsActivity extends BaseActivity<StockDetailsViewModel>
 
     private String getStockSymbol() {
         final Intent intent = getIntent();
-        return intent.getStringExtra(MyStocksActivity.INTENT_EXTRA_SYMBOL);
+        return intent.getData().getLastPathSegment();
     }
 
     private void injectDependencies(@Nullable Bundle savedInstanceState, @NonNull String stockSymbol) {
@@ -82,7 +82,7 @@ public class StockDetailsActivity extends BaseActivity<StockDetailsViewModel>
     private void setChartStyle() {
         final int textColor = getTextColorPrimary();
         mBinding.lcStockDetails.setNoDataText("");
-        mBinding.lcStockDetails.setDescription("value over time");
+        mBinding.lcStockDetails.setDescription(getString(R.string.desc_stock_value_time));
         mBinding.lcStockDetails.setDescriptionColor(textColor);
         mBinding.lcStockDetails.setAutoScaleMinMaxEnabled(true);
         mBinding.lcStockDetails.getXAxis().setTextColor(textColor);

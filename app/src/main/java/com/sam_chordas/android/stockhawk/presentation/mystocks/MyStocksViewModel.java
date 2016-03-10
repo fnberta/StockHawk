@@ -26,8 +26,6 @@ public interface MyStocksViewModel extends ViewModel, MyStocksRecyclerAdapter.Ad
 
     void setRefreshing(boolean refreshing);
 
-    boolean isShowPercent();
-
     void onLoadingLocalStocks();
 
     @Override
@@ -58,5 +56,9 @@ public interface MyStocksViewModel extends ViewModel, MyStocksRecyclerAdapter.Ad
         void notifyItemsChanged();
 
         void showStockDetailsScreen(int position);
+
+        void showProgressDialog(@StringRes int message);
+
+        void hideProgressDialog();
     }
 }

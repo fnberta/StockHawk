@@ -4,8 +4,8 @@ import com.google.android.gms.gcm.GcmNetworkManager;
 import com.google.android.gms.gcm.GcmTaskService;
 import com.google.android.gms.gcm.TaskParams;
 import com.sam_chordas.android.stockhawk.StockHawk;
-import com.sam_chordas.android.stockhawk.data.di.RepositoriesModule;
 import com.sam_chordas.android.stockhawk.data.services.di.DaggerUpdateStocksServiceComponent;
+import com.sam_chordas.android.stockhawk.di.RepositoriesModule;
 import com.sam_chordas.android.stockhawk.domain.repositories.StockRepository;
 
 import javax.inject.Inject;

@@ -1,5 +1,6 @@
 package com.sam_chordas.android.stockhawk.presentation.mystocks;
 
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.database.Cursor;
 import android.databinding.DataBindingUtil;
@@ -7,9 +8,9 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.annotation.StringRes;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
-import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.helper.ItemTouchHelper;
@@ -20,9 +21,9 @@ import android.view.View;
 import com.google.android.gms.gcm.GcmNetworkManager;
 import com.google.android.gms.gcm.PeriodicTask;
 import com.google.android.gms.gcm.Task;
-import com.sam_chordas.android.stockhawk.BuildConfig;
 import com.sam_chordas.android.stockhawk.R;
 import com.sam_chordas.android.stockhawk.StockHawk;
+import com.sam_chordas.android.stockhawk.data.provider.QuoteProvider;
 import com.sam_chordas.android.stockhawk.data.services.UpdateStocksIntentService;
 import com.sam_chordas.android.stockhawk.data.services.UpdateStocksTaskService;
 import com.sam_chordas.android.stockhawk.databinding.ActivityMyStocksBinding;
@@ -32,6 +33,7 @@ import com.sam_chordas.android.stockhawk.presentation.mystocks.di.DaggerMyStocks
 import com.sam_chordas.android.stockhawk.presentation.mystocks.di.MyStocksComponent;
 import com.sam_chordas.android.stockhawk.presentation.mystocks.di.MyStocksViewModelModule;
 import com.sam_chordas.android.stockhawk.presentation.stockdetails.StockDetailsActivity;
+import com.sam_chordas.android.stockhawk.presentation.widget.QuotesWidgetProvider;
 import com.sam_chordas.android.stockhawk.utils.Utils;
 
 import javax.inject.Inject;
@@ -44,7 +46,6 @@ public class MyStocksActivity extends BaseActivity<MyStocksViewModel>
         FindStockDialogFragment.DialogListener,
         SaveStockWorkerListener {
 
-    public static final String INTENT_EXTRA_SYMBOL = BuildConfig.APPLICATION_ID + "intents.EXTRA_SYMBOL";
     private static final int CURSOR_LOADER_ID = 0;
     private static final String PERIODIC_UPDATE_SERVICE = "PERIODIC_UPDATE_SERVICE";
     @Inject
@@ -52,6 +53,7 @@ public class MyStocksActivity extends BaseActivity<MyStocksViewModel>
     private ActivityMyStocksBinding mBinding;
     private MyStocksRecyclerAdapter mRecyclerAdapter;
     private MyStocksComponent mComponent;
+    private ProgressDialog mProgressDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,8 +62,10 @@ public class MyStocksActivity extends BaseActivity<MyStocksViewModel>
 
         mBinding = DataBindingUtil.setContentView(this, R.layout.activity_my_stocks);
         mBinding.setViewModel(mViewModel);
+
         setupRecyclerView();
         checkRefreshing();
+        checkAddIntent(getIntent());
 
         getSupportLoaderManager().initLoader(CURSOR_LOADER_ID, null, this);
     }
@@ -75,23 +79,23 @@ public class MyStocksActivity extends BaseActivity<MyStocksViewModel>
     }
 
     private void setupRecyclerView() {
-        mRecyclerAdapter = new MyStocksRecyclerAdapter(null, mViewModel);
+        mRecyclerAdapter = new MyStocksRecyclerAdapter(null, mViewModel, mStockRepo);
         mBinding.rvMyStocks.setLayoutManager(new LinearLayoutManager(this));
         mBinding.rvMyStocks.setHasFixedSize(true);
         mBinding.rvMyStocks.setAdapter(mRecyclerAdapter);
         final ItemTouchHelper touchHelper = new ItemTouchHelper(new ItemTouchHelper.SimpleCallback(
-                ItemTouchHelper.UP | ItemTouchHelper.DOWN,
-                ItemTouchHelper.START | ItemTouchHelper.END) {
+                0, ItemTouchHelper.START | ItemTouchHelper.END) {
             @Override
             public boolean onMove(RecyclerView recyclerView,
                                   @NonNull RecyclerView.ViewHolder source,
                                   @NonNull RecyclerView.ViewHolder target) {
-                if (source.getItemViewType() != target.getItemViewType()) {
-                    return false;
-                }
-
-                mRecyclerAdapter.onItemMove(source.getAdapterPosition(), target.getAdapterPosition());
-                return true;
+                return false;
+//                if (source.getItemViewType() != target.getItemViewType()) {
+//                    return false;
+//                }
+//
+//                mRecyclerAdapter.onItemMove(source.getAdapterPosition(), target.getAdapterPosition());
+//                return true;
             }
 
             @Override
@@ -113,6 +117,20 @@ public class MyStocksActivity extends BaseActivity<MyStocksViewModel>
         });
     }
 
+    private void checkAddIntent(@NonNull Intent intent) {
+        final boolean addQuote = intent.getBooleanExtra(QuotesWidgetProvider.EXTRA_ADD_QUOTE, false);
+        if (addQuote) {
+            showFindStockDialog();
+        }
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+
+        checkAddIntent(intent);
+    }
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.my_stocks, menu);
@@ -127,7 +145,6 @@ public class MyStocksActivity extends BaseActivity<MyStocksViewModel>
                 // TODO: load settings if there are any
                 return true;
             case R.id.action_change_units:
-                // this is for changing stock changes from percent value to dollar value
                 mViewModel.onChangeUnitsMenuClick();
                 return true;
             default:
@@ -215,7 +232,19 @@ public class MyStocksActivity extends BaseActivity<MyStocksViewModel>
     public void showStockDetailsScreen(int position) {
         final String symbol = mRecyclerAdapter.getSymbolForPosition(position);
         final Intent intent = new Intent(this, StockDetailsActivity.class);
-        intent.putExtra(INTENT_EXTRA_SYMBOL, symbol);
+        intent.setData(QuoteProvider.Quotes.withSymbol(symbol));
         startActivity(intent);
+    }
+
+    @Override
+    public void showProgressDialog(@StringRes int message) {
+        mProgressDialog = ProgressDialog.show(this, null, getString(message), true, true);
+    }
+
+    @Override
+    public void hideProgressDialog() {
+        if (mProgressDialog != null && mProgressDialog.isShowing()){
+            mProgressDialog.hide();
+        }
     }
 }

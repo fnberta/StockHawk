@@ -2,7 +2,7 @@
  * Copyright (c) 2016 Fabio Berta
  */
 
-package com.sam_chordas.android.stockhawk.data.di.scopes;
+package com.sam_chordas.android.stockhawk.di.scopes;
 
 import javax.inject.Scope;
 

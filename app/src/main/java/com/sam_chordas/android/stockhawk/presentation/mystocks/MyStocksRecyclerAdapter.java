@@ -26,7 +26,8 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.sam_chordas.android.stockhawk.data.provider.QuoteColumns;
-import com.sam_chordas.android.stockhawk.databinding.RowStocksQuoteBinding;
+import com.sam_chordas.android.stockhawk.databinding.ItemMyStocksBinding;
+import com.sam_chordas.android.stockhawk.domain.repositories.StockRepository;
 import com.sam_chordas.android.stockhawk.presentation.common.BaseBindingRow;
 import com.sam_chordas.android.stockhawk.presentation.common.ItemTouchHelperAdapter;
 
@@ -39,22 +40,26 @@ public class MyStocksRecyclerAdapter extends RecyclerView.Adapter<MyStocksRecycl
 
     private Cursor mCursor;
     private MyStocksViewModel mViewModel;
+    private StockRepository mStockRepo;
     private int mRowIdColumn;
-    private boolean mDataIsValid;
+    private boolean mDataValid;
 
-    public MyStocksRecyclerAdapter(@Nullable Cursor cursor, @NonNull MyStocksViewModel viewModel) {
+    public MyStocksRecyclerAdapter(@Nullable Cursor cursor,
+                                   @NonNull MyStocksViewModel viewModel,
+                                   @NonNull StockRepository stockRepository) {
         mCursor = cursor;
-        mDataIsValid = cursor != null;
-        mRowIdColumn = mDataIsValid ? cursor.getColumnIndexOrThrow(BaseColumns._ID) : -1;
+        mDataValid = cursor != null;
+        mRowIdColumn = mDataValid ? cursor.getColumnIndexOrThrow(BaseColumns._ID) : -1;
         setHasStableIds(true);
 
         mViewModel = viewModel;
+        mStockRepo = stockRepository;
     }
 
     @Override
     public StockRow onCreateViewHolder(ViewGroup parent, int viewType) {
         final LayoutInflater inflater = LayoutInflater.from(parent.getContext());
-        final RowStocksQuoteBinding binding = RowStocksQuoteBinding.inflate(inflater, parent, false);
+        final ItemMyStocksBinding binding = ItemMyStocksBinding.inflate(inflater, parent, false);
         return new StockRow(binding, mViewModel);
     }
 
@@ -69,13 +74,13 @@ public class MyStocksRecyclerAdapter extends RecyclerView.Adapter<MyStocksRecycl
         final double changeValue = mCursor.getDouble(mCursor.getColumnIndex(QuoteColumns.CHANGE));
         final String changePercent = mCursor.getString(mCursor.getColumnIndex(QuoteColumns.PERCENT_CHANGE));
 
-        final RowStocksQuoteBinding binding = holder.getBinding();
+        final ItemMyStocksBinding binding = holder.getBinding();
         final StockRowViewModel viewModel = binding.getViewModel();
         if (viewModel == null) {
             binding.setViewModel(new StockRowViewModel(symbol, bidPrice, changeValue, changePercent,
-                    mViewModel.isShowPercent()));
+                    mStockRepo.showPercentages()));
         } else {
-            viewModel.setInfo(symbol, bidPrice, changeValue, changePercent, mViewModel.isShowPercent());
+            viewModel.setInfo(symbol, bidPrice, changeValue, changePercent, mStockRepo.showPercentages());
             viewModel.notifyChange();
         }
         binding.executePendingBindings();
@@ -83,12 +88,12 @@ public class MyStocksRecyclerAdapter extends RecyclerView.Adapter<MyStocksRecycl
 
     @Override
     public int getItemCount() {
-        return mDataIsValid ? mCursor.getCount() : 0;
+        return mDataValid ? mCursor.getCount() : 0;
     }
 
     @Override
     public long getItemId(int position) {
-        if (mDataIsValid) {
+        if (mDataValid) {
             return mCursor.moveToPosition(position)
                     ? mCursor.getLong(mRowIdColumn)
                     : RecyclerView.NO_ID;
@@ -117,11 +122,11 @@ public class MyStocksRecyclerAdapter extends RecyclerView.Adapter<MyStocksRecycl
 
         if (newCursor != null) {
             mRowIdColumn = newCursor.getColumnIndexOrThrow(BaseColumns._ID);
-            mDataIsValid = true;
+            mDataValid = true;
             notifyDataSetChanged();
         } else {
             mRowIdColumn = -1;
-            mDataIsValid = false;
+            mDataValid = false;
             // notify about the lack of a data set
             notifyItemRangeRemoved(0, itemCount);
         }
@@ -150,9 +155,9 @@ public class MyStocksRecyclerAdapter extends RecyclerView.Adapter<MyStocksRecycl
         void onStockItemClick(int position);
     }
 
-    public static class StockRow extends BaseBindingRow<RowStocksQuoteBinding> {
+    public static class StockRow extends BaseBindingRow<ItemMyStocksBinding> {
 
-        public StockRow(@NonNull RowStocksQuoteBinding binding,
+        public StockRow(@NonNull ItemMyStocksBinding binding,
                         @NonNull final AdapterListener listener) {
             super(binding);
 

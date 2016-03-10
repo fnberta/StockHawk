@@ -3,6 +3,7 @@ package com.sam_chordas.android.stockhawk.presentation.common;
 import android.databinding.Observable;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.annotation.StringRes;
 
 /**
  * Created by fabio on 07.03.16.
@@ -29,9 +30,9 @@ public interface ViewModel extends Observable, BaseWorkerListener {
 
     interface ViewListener {
 
-        void showMessage(int message);
+        void showMessage(@StringRes int message);
 
-        void showMessage(int message, int length);
+        void showMessage(@StringRes int message, int length);
 
         void removeWorker(@NonNull String workerTag);
     }

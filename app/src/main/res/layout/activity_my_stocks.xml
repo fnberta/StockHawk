@@ -23,8 +23,8 @@
             android:id="@+id/srl_my_stocks"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            app:onRefreshListener="@{viewModel.onRefreshListener}"
             app:colorScheme="@{@intArray/srl_color_scheme}"
+            app:onRefreshListener="@{viewModel.onRefreshListener}"
             app:refreshing="@{viewModel.refreshing}"
             >
 
@@ -67,6 +67,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="bottom|end"
             android:layout_margin="@dimen/normal_space"
+            android:contentDescription="@string/desc_my_stocks_add_fab"
             android:onClick="@{viewModel.onFabClick}"
             android:src="@drawable/ic_add_white_24dp"
             />

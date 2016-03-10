@@ -4,9 +4,9 @@
 
 package com.sam_chordas.android.stockhawk.data.services.di;
 
-import com.sam_chordas.android.stockhawk.data.di.ApplicationComponent;
-import com.sam_chordas.android.stockhawk.data.di.RepositoriesModule;
-import com.sam_chordas.android.stockhawk.data.di.scopes.PerService;
+import com.sam_chordas.android.stockhawk.di.ApplicationComponent;
+import com.sam_chordas.android.stockhawk.di.RepositoriesModule;
+import com.sam_chordas.android.stockhawk.di.scopes.PerService;
 import com.sam_chordas.android.stockhawk.data.services.UpdateStocksIntentService;
 import com.sam_chordas.android.stockhawk.data.services.UpdateStocksTaskService;
 

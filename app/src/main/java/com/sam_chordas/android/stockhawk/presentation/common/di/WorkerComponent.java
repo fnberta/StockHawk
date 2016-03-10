@@ -4,9 +4,9 @@
 
 package com.sam_chordas.android.stockhawk.presentation.common.di;
 
-import com.sam_chordas.android.stockhawk.data.di.ApplicationComponent;
-import com.sam_chordas.android.stockhawk.data.di.RepositoriesModule;
-import com.sam_chordas.android.stockhawk.data.di.scopes.PerFragment;
+import com.sam_chordas.android.stockhawk.di.ApplicationComponent;
+import com.sam_chordas.android.stockhawk.di.RepositoriesModule;
+import com.sam_chordas.android.stockhawk.di.scopes.PerFragment;
 import com.sam_chordas.android.stockhawk.presentation.mystocks.SaveStockWorker;
 
 import dagger.Component;

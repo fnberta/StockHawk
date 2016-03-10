@@ -8,7 +8,7 @@ import android.app.Application;
 import android.support.annotation.NonNull;
 import android.support.v4.content.CursorLoader;
 
-import com.sam_chordas.android.stockhawk.data.di.scopes.PerActivity;
+import com.sam_chordas.android.stockhawk.di.scopes.PerActivity;
 import com.sam_chordas.android.stockhawk.data.provider.QuoteColumns;
 import com.sam_chordas.android.stockhawk.data.provider.QuoteProvider;
 

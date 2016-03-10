@@ -17,10 +17,12 @@
     <!-- Dialog -->
     <dimen name="dialog_padding">24dp</dimen>
 
+    <!-- System -->
+    <dimen name="touch_target_min">48dp</dimen>
+    <dimen name="icon_padding">12dp</dimen>
+
     <!-- Widget -->
-    <dimen name="widget_default_height">110dp</dimen>
-    <dimen name="widget_default_width">110dp</dimen>
-    <!-- Default screen margins, per the Android Design guidelines. -->
-    <dimen name="activity_horizontal_margin">16dp</dimen>
-    <dimen name="activity_vertical_margin">16dp</dimen>
+    <dimen name="widget_default_height">180dp</dimen>
+    <dimen name="widget_default_width">180dp</dimen>
+    <dimen name="widget_min_height">110dp</dimen>
 </resources>

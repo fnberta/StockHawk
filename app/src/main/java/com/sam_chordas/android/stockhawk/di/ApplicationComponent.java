@@ -2,9 +2,12 @@
  * Copyright (c) 2016 Fabio Berta
  */
 
-package com.sam_chordas.android.stockhawk.data.di;
+package com.sam_chordas.android.stockhawk.di;
 
 import android.app.Application;
+import android.appwidget.AppWidgetManager;
+import android.content.ContentResolver;
+import android.content.SharedPreferences;
 
 import com.sam_chordas.android.stockhawk.StockHawk;
 import com.sam_chordas.android.stockhawk.data.rest.YahooFinance;
@@ -23,6 +26,12 @@ import dagger.Component;
 public interface ApplicationComponent {
 
     Application getApplication();
+
+    ContentResolver getContentResolver();
+
+    SharedPreferences getSharedPreferences();
+
+    AppWidgetManager getAppWidgetManager();
 
     YahooFinance getYahooFinance();
 }
