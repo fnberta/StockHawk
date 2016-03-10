@@ -1,6 +1,7 @@
 <layout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     >
 
     <data>
@@ -16,7 +17,6 @@
     <android.support.design.widget.CoordinatorLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:animateLayoutChanges="true"
         >
 
         <android.support.v4.widget.SwipeRefreshLayout
@@ -61,6 +61,19 @@
                 />
 
         </LinearLayout>
+
+        <TextView
+            style="@style/TextAppearance.AppCompat.Title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:drawablePadding="@dimen/small_space"
+            android:drawableTop="@drawable/ic_attach_money_white_144dp"
+            android:gravity="center_horizontal"
+            android:text="@string/my_stock_empty"
+            android:visibility="@{!viewModel.empty ? View.GONE : viewModel.loading ? View.GONE : View.VISIBLE}"
+            tools:visibility="visible"
+            />
 
         <android.support.design.widget.FloatingActionButton
             android:layout_width="wrap_content"

@@ -43,6 +43,7 @@ import rx.schedulers.Schedulers;
 public class StockRepositoryImpl implements StockRepository {
 
     private static final String SHOW_PERCENTAGE = "SHOW_PERCENTAGE";
+    private static final String INITIAL_SYMBOLS = "(\"YHOO\",\"AAPL\",\"GOOG\",\"MSFT\")";
     private ContentResolver mContentResolver;
     private AppWidgetManager mAppWidgetManager;
     private ComponentName mWidgetProviderComp;
@@ -157,8 +158,8 @@ public class StockRepositoryImpl implements StockRepository {
 
 
     private boolean insertInitial() {
-        final String selection = ("select symbol, Bid, Change, ChangeinPercent from yahoo.finance.quotes where symbol in " +
-                "(\"YHOO\",\"AAPL\",\"GOOG\",\"MSFT\")");
+        final String selection = ("select symbol, Bid, Change, ChangeinPercent " +
+                "from yahoo.finance.quotes where symbol in " + INITIAL_SYMBOLS);
         final Call<YahooQueryResult> request = mYahooFinance.getQuotes(selection);
         final Response<YahooQueryResult> response;
         try {
@@ -222,7 +223,8 @@ public class StockRepositoryImpl implements StockRepository {
                             return Single.error(new QuoteException(Code.ALREADY_SAVED));
                         }
 
-                        final String selection = ("select symbol, Bid, Change, ChangeinPercent from yahoo.finance.quotes where symbol in " +
+                        final String selection = ("select symbol, Bid, Change, ChangeinPercent " +
+                                "from yahoo.finance.quotes where symbol in " +
                                 "(\"" + stockSymbol + "\")");
                         return mYahooFinance.getQuote(selection);
                     }
@@ -258,7 +260,7 @@ public class StockRepositoryImpl implements StockRepository {
     }
 
     @Override
-    public Single<Integer> deleteStock(final long rowId) {
+    public Single<Boolean> deleteStock(final long rowId) {
         return Single.just(rowId)
                 .subscribeOn(Schedulers.io())
                 .map(new Func1<Long, Integer>() {
@@ -271,13 +273,37 @@ public class StockRepositoryImpl implements StockRepository {
                         );
                     }
                 })
-                .observeOn(AndroidSchedulers.mainThread())
-                .doOnSuccess(new Action1<Integer>() {
+                .map(new Func1<Integer, Boolean>() {
                     @Override
-                    public void call(Integer integer) {
+                    public Boolean call(Integer integer) {
+                        return getStocksCount() == 0;
+                    }
+                })
+                .observeOn(AndroidSchedulers.mainThread())
+                .doOnSuccess(new Action1<Boolean>() {
+                    @Override
+                    public void call(Boolean isEmpty) {
                         updateWidget();
                     }
                 });
+    }
+
+    private int getStocksCount() {
+        final Cursor cursor = mContentResolver.query(
+                QuoteProvider.Quotes.CONTENT_URI,
+                new String[]{},
+                null,
+                null,
+                null
+        );
+
+        if (cursor != null && cursor.moveToFirst()) {
+            final int count = cursor.getCount();
+            cursor.close();
+            return count;
+        }
+
+        return 0;
     }
 
     @Override
@@ -288,7 +314,8 @@ public class StockRepositoryImpl implements StockRepository {
         cal.add(Calendar.MONTH, -6);
         final Date sixMonthBack = cal.getTime();
 
-        final String selection = ("select Symbol, Date, Adj_Close from yahoo.finance.historicaldata where symbol in " +
+        final String selection = ("select Symbol, Date, Adj_Close " +
+                "from yahoo.finance.historicaldata where symbol in " +
                 "(\"" + stockSymbol + "\") and startDate = \"" + formatter.format(sixMonthBack) +
                 "\" and endDate = \"" + formatter.format(today) + "\"");
         return mYahooFinance.getQuoteDetails(selection)
@@ -296,7 +323,9 @@ public class StockRepositoryImpl implements StockRepository {
                 .flatMapObservable(new Func1<YahooQueryDetailsResult, Observable<? extends QuoteTime>>() {
                     @Override
                     public Observable<? extends QuoteTime> call(YahooQueryDetailsResult yahooQueryDetailsResult) {
-                        return Observable.from(yahooQueryDetailsResult.getQuery().getResults().getQuoteTimes());
+                        final YahooQueryDetailsResult.Query query = yahooQueryDetailsResult.getQuery();
+                        final YahooQueryDetailsResult.Results results = query.getResults();
+                        return Observable.from(results.getQuoteTimes());
                     }
                 })
                 .observeOn(AndroidSchedulers.mainThread());

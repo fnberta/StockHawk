@@ -21,6 +21,9 @@ public interface StockDetailsViewModel extends ViewModel {
     void setLoading(boolean loading);
 
     @Bindable
+    boolean isEmpty();
+
+    @Bindable
     LineData getChartData();
 
     void setChartData(@NonNull LineData chartData);

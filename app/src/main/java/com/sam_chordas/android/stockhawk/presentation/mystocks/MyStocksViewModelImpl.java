@@ -5,7 +5,6 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.design.widget.Snackbar;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.text.TextUtils;
 import android.view.View;
@@ -16,7 +15,6 @@ import com.sam_chordas.android.stockhawk.data.repositories.QuoteException;
 import com.sam_chordas.android.stockhawk.data.repositories.QuoteException.Code;
 import com.sam_chordas.android.stockhawk.domain.repositories.StockRepository;
 import com.sam_chordas.android.stockhawk.presentation.common.ViewModelBaseImpl;
-import com.sam_chordas.android.stockhawk.utils.Utils;
 
 import rx.Single;
 import rx.SingleSubscriber;
@@ -69,6 +67,11 @@ public class MyStocksViewModelImpl extends ViewModelBaseImpl<MyStocksViewModel.V
     }
 
     @Override
+    public boolean isEmpty() {
+        return !mView.isDataAvailable();
+    }
+
+    @Override
     @Bindable
     public boolean isRefreshing() {
         return mRefreshing;
@@ -85,7 +88,7 @@ public class MyStocksViewModelImpl extends ViewModelBaseImpl<MyStocksViewModel.V
         super.onViewVisible();
 
         if (!mView.isNetworkAvailable()) {
-            mView.showMessage(R.string.snackbar_no_network);
+            mView.showMessage(R.string.snackbar_error_no_network_out_of_date);
         }
     }
 
@@ -95,6 +98,8 @@ public class MyStocksViewModelImpl extends ViewModelBaseImpl<MyStocksViewModel.V
 
         if (mView.isNetworkAvailable()) {
             mView.loadUpdateStocksService();
+        } else {
+            setLoading(false);
         }
     }
 
@@ -106,15 +111,18 @@ public class MyStocksViewModelImpl extends ViewModelBaseImpl<MyStocksViewModel.V
     @Override
     public void onDeleteStockItem(long rowId) {
         getSubscriptions().add(mStockRepo.deleteStock(rowId)
-                .subscribe(new SingleSubscriber<Integer>() {
+                .subscribe(new SingleSubscriber<Boolean>() {
                     @Override
-                    public void onSuccess(Integer value) {
-                        // do nothing
+                    public void onSuccess(Boolean isEmpty) {
+                        if (isEmpty) {
+                            notifyPropertyChanged(BR.empty);
+                        }
                     }
 
                     @Override
                     public void onError(Throwable error) {
-                        // TODO: handle error
+                        mView.showMessage(R.string.snackbar_error_delete_stock);
+                        mView.notifyItemsChanged();
                     }
                 })
         );
@@ -177,7 +185,7 @@ public class MyStocksViewModelImpl extends ViewModelBaseImpl<MyStocksViewModel.V
         if (mView.isNetworkAvailable()) {
             mView.showFindStockDialog();
         } else {
-            mView.showMessage(R.string.snackbar_no_network);
+            mView.showMessage(R.string.snackbar_error_no_network_out_of_date);
         }
     }
 

@@ -56,11 +56,11 @@
 
         <TextView
             android:id="@+id/tv_widget_empty_view"
-            style="@style/TextAppearance.AppCompat.Headline"
+            style="@style/TextAppearance.AppCompat.Title"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:text="@string/widget_empty"
+            android:text="@string/my_stock_empty"
             />
     </FrameLayout>
 

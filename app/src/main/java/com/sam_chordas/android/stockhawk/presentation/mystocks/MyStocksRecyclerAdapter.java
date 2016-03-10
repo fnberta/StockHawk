@@ -141,6 +141,10 @@ public class MyStocksRecyclerAdapter extends RecyclerView.Adapter<MyStocksRecycl
         mViewModel.onDeleteStockItem(rowId);
     }
 
+    public boolean isDataAvailable() {
+        return mDataValid && mCursor.moveToFirst();
+    }
+
     public String getSymbolForPosition(int position) {
         mCursor.moveToPosition(position);
         return mCursor.getString(mCursor.getColumnIndex(QuoteColumns.SYMBOL));

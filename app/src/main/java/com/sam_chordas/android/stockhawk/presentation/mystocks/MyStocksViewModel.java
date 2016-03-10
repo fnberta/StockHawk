@@ -22,6 +22,9 @@ public interface MyStocksViewModel extends ViewModel, MyStocksRecyclerAdapter.Ad
     void setLoading(boolean loading);
 
     @Bindable
+    boolean isEmpty();
+
+    @Bindable
     boolean isRefreshing();
 
     void setRefreshing(boolean refreshing);
@@ -44,6 +47,8 @@ public interface MyStocksViewModel extends ViewModel, MyStocksRecyclerAdapter.Ad
 
     interface ViewListener extends ViewModel.ViewListener {
         boolean isNetworkAvailable();
+
+        boolean isDataAvailable();
 
         void showFindStockDialog();
 

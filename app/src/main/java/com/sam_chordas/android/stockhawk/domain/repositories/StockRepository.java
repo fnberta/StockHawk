@@ -19,7 +19,7 @@ public interface StockRepository {
 
     Single<Uri> saveSymbol(@NonNull String symbol);
 
-    Single<Integer> deleteStock(long rowId);
+    Single<Boolean> deleteStock(long rowId);
 
     Observable<QuoteTime> getStockDataOverTime(@NonNull String stockSymbol);
 

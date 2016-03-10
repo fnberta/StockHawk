@@ -19,7 +19,6 @@ import com.sam_chordas.android.stockhawk.data.rest.QuoteTime;
 import com.sam_chordas.android.stockhawk.databinding.ActivityStockDetailsBinding;
 import com.sam_chordas.android.stockhawk.domain.repositories.StockRepository;
 import com.sam_chordas.android.stockhawk.presentation.common.BaseActivity;
-import com.sam_chordas.android.stockhawk.presentation.mystocks.MyStocksActivity;
 import com.sam_chordas.android.stockhawk.presentation.stockdetails.di.DaggerStockDetailsComponent;
 import com.sam_chordas.android.stockhawk.presentation.stockdetails.di.StockDetailsComponent;
 import com.sam_chordas.android.stockhawk.presentation.stockdetails.di.StockDetailsLoaderModule;
@@ -61,7 +60,7 @@ public class StockDetailsActivity extends BaseActivity<StockDetailsViewModel>
             getSupportLoaderManager().initLoader(DETAILS_LOADER_ID, null, this);
         } else {
             mViewModel.setLoading(false);
-            showMessage(R.string.snackbar_no_network);
+            showMessage(R.string.snackbar_error_no_network);
         }
     }
 

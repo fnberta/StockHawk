@@ -68,6 +68,12 @@ public class StockDetailsViewModelImpl extends ViewModelBaseImpl<StockDetailsVie
 
     @Bindable
     @Override
+    public boolean isEmpty() {
+        return mChartData == null;
+    }
+
+    @Bindable
+    @Override
     public LineData getChartData() {
         return mChartData;
     }

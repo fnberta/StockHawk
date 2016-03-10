@@ -7,7 +7,8 @@
     <string name="dialog_message_symbol_search">Search for a stock symbol</string>
     <string name="hint_stock_symbol">Stock symbol</string>
     <string name="widget_title">My stock symbols</string>
-    <string name="snackbar_no_network">No internet connection. Quotes may be out of date!</string>
+    <string name="snackbar_error_no_network">No internet connection</string>
+    <string name="snackbar_error_no_network_out_of_date">No internet connection. Quotes may be out of date!</string>
     <string name="snackbar_error_add_stock_already_saved">This stock is already saved</string>
     <string name="snackbar_error_add_stock">Failed to add new stock</string>
     <string name="snackbar_stock_removed">Removed stock symbol</string>
@@ -19,6 +20,8 @@
     <string name="progress_loading_details">Loading stock symbol details…</string>
     <string name="desc_my_stocks_add_fab">Find and save new stock symbol</string>
     <string name="desc_stock_value_time">Value over last 6 month</string>
-    <string name="widget_empty">No stocks</string>
     <string name="progress_saving_symbol">Saving new symbol…</string>
+    <string name="stock_details_empty">No details available</string>
+    <string name="my_stock_empty">No stock symbols saved</string>
+    <string name="snackbar_error_delete_stock">Failed to delete stock symbol</string>
 </resources>
