@@ -29,14 +29,14 @@ import com.sam_chordas.android.stockhawk.data.provider.QuoteColumns;
 import com.sam_chordas.android.stockhawk.databinding.ItemMyStocksBinding;
 import com.sam_chordas.android.stockhawk.domain.repositories.StockRepository;
 import com.sam_chordas.android.stockhawk.presentation.common.BaseBindingRow;
-import com.sam_chordas.android.stockhawk.presentation.common.ItemTouchHelperAdapter;
+import com.sam_chordas.android.stockhawk.presentation.common.SwipeToDismissAdapter;
 
 
 /**
  * Provides the adapter for a movie poster images grid.
  */
 public class MyStocksRecyclerAdapter extends RecyclerView.Adapter<MyStocksRecyclerAdapter.StockRow>
-        implements ItemTouchHelperAdapter {
+        implements SwipeToDismissAdapter {
 
     private Cursor mCursor;
     private MyStocksViewModel mViewModel;
@@ -139,11 +139,6 @@ public class MyStocksRecyclerAdapter extends RecyclerView.Adapter<MyStocksRecycl
         mCursor.moveToPosition(position);
         final long rowId = mCursor.getLong(mCursor.getColumnIndex(QuoteColumns._ID));
         mViewModel.onDeleteStockItem(rowId);
-    }
-
-    @Override
-    public void onItemMove(int oldPos, int newPos) {
-        // TODO: implement reordering
     }
 
     public String getSymbolForPosition(int position) {

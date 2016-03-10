@@ -5,9 +5,7 @@ package com.sam_chordas.android.stockhawk.presentation.common;
  * credit to Paul Burke (ipaulpro)
  * Interface to enable swipe to delete
  */
-public interface ItemTouchHelperAdapter {
+public interface SwipeToDismissAdapter {
 
     void onItemDismiss(int position);
-
-    void onItemMove(int oldPos, int newPos);
 }
