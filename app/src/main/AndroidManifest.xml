@@ -48,7 +48,7 @@
         <provider
             android:name=".data.provider.generated.QuoteProvider"
             android:authorities="com.sam_chordas.android.stockhawk"
-            android:exported="true"
+            android:exported="false"
             />
 
         <receiver

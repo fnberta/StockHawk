@@ -9,6 +9,7 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.annotation.StringRes;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
 import android.support.v7.widget.LinearLayoutManager;
@@ -90,12 +91,6 @@ public class MyStocksActivity extends BaseActivity<MyStocksViewModel>
                                   @NonNull RecyclerView.ViewHolder source,
                                   @NonNull RecyclerView.ViewHolder target) {
                 return false;
-//                if (source.getItemViewType() != target.getItemViewType()) {
-//                    return false;
-//                }
-//
-//                mRecyclerAdapter.onItemMove(source.getAdapterPosition(), target.getAdapterPosition());
-//                return true;
             }
 
             @Override
@@ -194,14 +189,11 @@ public class MyStocksActivity extends BaseActivity<MyStocksViewModel>
 
     @Override
     public void loadPeriodicQueryService() {
-        final long period = 3600L;
-        final long flex = 10L;
-
         final PeriodicTask periodicTask = new PeriodicTask.Builder()
                 .setService(UpdateStocksTaskService.class)
                 .setTag(PERIODIC_UPDATE_SERVICE)
-                .setPeriod(period)
-                .setFlex(flex)
+                .setPeriod(3600)
+                .setFlex(10)
                 .setRequiredNetwork(Task.NETWORK_STATE_CONNECTED)
                 .setRequiresCharging(false)
                 .build();

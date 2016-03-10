@@ -16,6 +16,7 @@ import com.sam_chordas.android.stockhawk.data.repositories.QuoteException;
 import com.sam_chordas.android.stockhawk.data.repositories.QuoteException.Code;
 import com.sam_chordas.android.stockhawk.domain.repositories.StockRepository;
 import com.sam_chordas.android.stockhawk.presentation.common.ViewModelBaseImpl;
+import com.sam_chordas.android.stockhawk.utils.Utils;
 
 import rx.Single;
 import rx.SingleSubscriber;
@@ -80,13 +81,20 @@ public class MyStocksViewModelImpl extends ViewModelBaseImpl<MyStocksViewModel.V
     }
 
     @Override
+    public void onViewVisible() {
+        super.onViewVisible();
+
+        if (!mView.isNetworkAvailable()) {
+            mView.showMessage(R.string.snackbar_no_network);
+        }
+    }
+
+    @Override
     public void onLoadingLocalStocks() {
         mView.loadPeriodicQueryService();
 
         if (mView.isNetworkAvailable()) {
             mView.loadUpdateStocksService();
-        } else {
-            mView.showMessage(R.string.snackbar_no_network, Snackbar.LENGTH_INDEFINITE);
         }
     }
 

@@ -4,6 +4,7 @@ import android.app.Application;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
+import android.os.Binder;
 import android.provider.BaseColumns;
 import android.support.annotation.NonNull;
 import android.widget.AdapterView;
@@ -63,7 +64,17 @@ public class QuotesWidgetService extends RemoteViewsService {
                 mCursor.close();
             }
 
-            mCursor = mStockRepo.getStocks();
+            // This method is called by the app hosting the widget (e.g., the launcher)
+            // However, our ContentProvider is not exported so it doesn't have access to the
+            // data. Therefore we need to clear (and finally restore) the calling identity so
+            // that calls use our process and permission
+            final long identityToken = Binder.clearCallingIdentity();
+            try {
+                mCursor = mStockRepo.getStocks();
+            } finally {
+                Binder.restoreCallingIdentity(identityToken);
+            }
+
             mRowIdColumn = mCursor != null ? mCursor.getColumnIndexOrThrow(BaseColumns._ID) : -1;
         }
 
