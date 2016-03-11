@@ -19,7 +19,8 @@ import javax.inject.Inject;
  */
 public class LocalBroadcast {
 
-    public static final String ACTION_DATA_UPDATED = BuildConfig.APPLICATION_ID + ".intents.DATA_UPDATED";
+    public static final String ACTION_DATA_UPDATED = BuildConfig.APPLICATION_ID + ".intents.actions.DATA_UPDATED";
+    public static final String EXTRA_SUCCESSFUL = BuildConfig.APPLICATION_ID + ".intents.extras.SUCCESSFUL";
     private final LocalBroadcastManager mBroadcastManager;
 
     @Inject
@@ -27,8 +28,9 @@ public class LocalBroadcast {
         mBroadcastManager = broadcastManager;
     }
 
-    public void sendDataUpdated() {
+    public void sendDataUpdated(boolean successful) {
         final Intent intent = new Intent(ACTION_DATA_UPDATED);
+        intent.putExtra(EXTRA_SUCCESSFUL, successful);
         send(intent);
     }
 

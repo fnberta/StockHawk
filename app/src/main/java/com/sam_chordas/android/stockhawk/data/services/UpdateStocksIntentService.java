@@ -35,9 +35,8 @@ public class UpdateStocksIntentService extends IntentService {
     @Override
     protected void onHandleIntent(Intent intent) {
         injectDependencies();
-        if (mStockRepo.updateStocks()) {
-            mLocalBroadcast.sendDataUpdated();
-        }
+        final boolean successful = mStockRepo.updateStocks();
+        mLocalBroadcast.sendDataUpdated(successful);
     }
 
     private void injectDependencies() {

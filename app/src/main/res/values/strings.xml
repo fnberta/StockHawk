@@ -33,4 +33,5 @@
     <string name="pref_sync_interval_120">Every 2 hours</string>
     <string name="pref_sync_interval_1440">Every day</string>
     <string name="snackbar_error_google_play_services">Google Play Services error</string>
+    <string name="snackbar_error_update_stocks">Failed to update stock values. They may be out of date!</string>
 </resources>

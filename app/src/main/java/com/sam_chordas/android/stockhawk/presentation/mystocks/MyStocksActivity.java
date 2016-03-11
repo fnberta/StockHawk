@@ -65,7 +65,8 @@ public class MyStocksActivity extends BaseActivity<MyStocksViewModel>
         public void onReceive(Context context, @NonNull Intent intent) {
             final String action = intent.getAction();
             if (action.equals(LocalBroadcast.ACTION_DATA_UPDATED)) {
-                mViewModel.onDataUpdated();
+                final boolean successful = intent.getBooleanExtra(LocalBroadcast.EXTRA_SUCCESSFUL, false);
+                mViewModel.onDataUpdated(successful);
             }
         }
     };
@@ -138,8 +139,8 @@ public class MyStocksActivity extends BaseActivity<MyStocksViewModel>
     }
 
     private void checkRefreshing() {
-        // work around bug that state of swipe refresh layout can only be changed after is is drawn.
-        // remove once bug is fixed
+        // work around bug that state of swipe refresh layout can only be changed after it is drawn
+        // TODO: remove once bug is fixed
         mBinding.srlMyStocks.post(new Runnable() {
             @Override
             public void run() {

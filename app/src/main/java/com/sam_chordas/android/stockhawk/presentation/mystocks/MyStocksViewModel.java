@@ -29,7 +29,7 @@ public interface MyStocksViewModel extends ViewModel, MyStocksRecyclerAdapter.Ad
 
     void onLoadingLocalStocks();
 
-    void onDataUpdated();
+    void onDataUpdated(boolean successful);
 
     @Override
     void onStockItemClick(int position);
