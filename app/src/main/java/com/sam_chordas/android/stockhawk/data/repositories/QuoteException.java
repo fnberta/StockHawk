@@ -22,6 +22,7 @@ public class QuoteException extends RuntimeException {
         mCode = code;
     }
 
+    @Code
     public int getCode() {
         return mCode;
     }

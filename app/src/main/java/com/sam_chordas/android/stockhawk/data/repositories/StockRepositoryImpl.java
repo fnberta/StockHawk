@@ -219,7 +219,9 @@ public class StockRepositoryImpl implements StockRepository {
                 .map(new Func1<Cursor, Boolean>() {
                     @Override
                     public Boolean call(Cursor cursor) {
-                        return cursor.moveToFirst();
+                        final boolean notEmpty = cursor.moveToFirst();
+                        cursor.close();
+                        return notEmpty;
                     }
                 })
                 .flatMap(new Func1<Boolean, Single<YahooQueryResult>>() {

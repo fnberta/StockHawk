@@ -106,8 +106,8 @@ public class MyStocksViewModelImpl extends ViewModelBaseImpl<MyStocksViewModel.V
     @Override
     public void onDataUpdated(boolean successful) {
         setRefreshing(false);
-        // If successful, loader will automatically re-query the data. But if not, hide refreshing
-        // spinner and show error message
+        // If successful, loader will automatically re-query the data. But if not, show an
+        // appropriate error message.
         if (!successful) {
             mView.showMessage(R.string.snackbar_error_update_stocks);
         }
@@ -168,7 +168,7 @@ public class MyStocksViewModelImpl extends ViewModelBaseImpl<MyStocksViewModel.V
                         mView.hideProgressDialog();
 
                         if (error instanceof QuoteException) {
-                            @Code final int code = ((QuoteException) error).getCode();
+                            final int code = ((QuoteException) error).getCode();
                             switch (code) {
                                 case Code.ALREADY_SAVED:
                                     mView.showMessage(R.string.snackbar_error_add_stock_already_saved);
@@ -206,7 +206,7 @@ public class MyStocksViewModelImpl extends ViewModelBaseImpl<MyStocksViewModel.V
         if (mView.isNetworkAvailable()) {
             mView.showFindStockDialog();
         } else {
-            mView.showMessage(R.string.snackbar_error_no_network_out_of_date);
+            mView.showMessage(R.string.snackbar_error_no_network);
         }
     }
 
