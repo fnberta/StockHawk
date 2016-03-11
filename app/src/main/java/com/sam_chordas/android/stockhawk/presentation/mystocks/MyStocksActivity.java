@@ -22,8 +22,6 @@ import android.view.View;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.android.gms.gcm.GcmNetworkManager;
-import com.google.android.gms.gcm.PeriodicTask;
-import com.google.android.gms.gcm.Task;
 import com.sam_chordas.android.stockhawk.R;
 import com.sam_chordas.android.stockhawk.StockHawk;
 import com.sam_chordas.android.stockhawk.data.provider.QuoteProvider;
@@ -56,7 +54,6 @@ public class MyStocksActivity extends BaseActivity<MyStocksViewModel>
         SaveStockWorkerListener {
 
     private static final int CURSOR_LOADER_ID = 0;
-    private static final String PERIODIC_UPDATE_SERVICE = "PERIODIC_UPDATE_SERVICE";
     private static final int RC_PLAY_SERVICES = 1;
     private static final int RC_SETTINGS = 2;
     @Inject
@@ -181,15 +178,8 @@ public class MyStocksActivity extends BaseActivity<MyStocksViewModel>
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        if (requestCode == RC_SETTINGS) {
-            switch (resultCode) {
-                case SettingsFragment.RESULT_DEFAULT_SYMBOLS_CHANGED:
-                    mViewModel.onDefaultSymbolsSettingsChanged();
-                    break;
-                case SettingsFragment.RESULT_SYNC_CHANGED:
-                    mViewModel.onSyncSettingsChanged();
-                    break;
-            }
+        if (requestCode == RC_SETTINGS && resultCode == SettingsFragment.RESULT_DEFAULT_SYMBOLS_CHANGED) {
+            mViewModel.onDefaultSymbolsSettingsChanged();
         }
     }
 
@@ -237,27 +227,13 @@ public class MyStocksActivity extends BaseActivity<MyStocksViewModel>
     }
 
     @Override
-    public void loadUpdateStocksService() {
+    public void startUpdateStocksService() {
         UpdateStocksIntentService.start(this);
     }
 
     @Override
-    public void loadPeriodicUpdateStocksService(long period) {
-        final PeriodicTask periodicTask = new PeriodicTask.Builder()
-                .setService(UpdateStocksTaskService.class)
-                .setTag(PERIODIC_UPDATE_SERVICE)
-                .setPeriod(period)
-                .setFlex(10L)
-                .setRequiredNetwork(Task.NETWORK_STATE_CONNECTED)
-                .setRequiresCharging(false)
-                .setUpdateCurrent(true)
-                .build();
-        GcmNetworkManager.getInstance(this).schedule(periodicTask);
-    }
-
-    @Override
-    public void cancelPeriodicUpdateStocksService() {
-        GcmNetworkManager.getInstance(this).cancelTask(PERIODIC_UPDATE_SERVICE, UpdateStocksTaskService.class);
+    public void startPeriodicUpdateStocksService(long period) {
+        UpdateStocksTaskService.startOrUpdate(this, period);
     }
 
     @Override

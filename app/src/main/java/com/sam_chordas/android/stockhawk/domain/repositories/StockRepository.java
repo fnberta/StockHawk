@@ -72,13 +72,6 @@ public interface StockRepository {
     boolean isLoadDefaultSymbolsEnabled();
 
     /**
-     * Returns whether the periodic syncing of locally saved stocks is enabled.
-     *
-     * @return whether the periodic syncing of locally saved stocks is enabled
-     */
-    boolean isSyncEnabled();
-
-    /**
      * Returns the period after which a sync should be performed.
      *
      * @return the period after which a sync should be performed

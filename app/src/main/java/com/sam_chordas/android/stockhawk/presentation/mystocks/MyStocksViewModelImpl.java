@@ -94,20 +94,12 @@ public class MyStocksViewModelImpl extends ViewModelBaseImpl<MyStocksViewModel.V
 
     @Override
     public void onLoadingLocalStocks() {
-        togglePeriodicUpdateService();
+        mView.startPeriodicUpdateStocksService(mStockRepo.getSyncPeriod());
 
         if (mView.isNetworkAvailable()) {
-            mView.loadUpdateStocksService();
+            mView.startUpdateStocksService();
         } else {
             setLoading(false);
-        }
-    }
-
-    private void togglePeriodicUpdateService() {
-        if (mStockRepo.isSyncEnabled()) {
-            mView.loadPeriodicUpdateStocksService(mStockRepo.getSyncPeriod());
-        } else {
-            mView.cancelPeriodicUpdateStocksService();
         }
     }
 
@@ -125,7 +117,7 @@ public class MyStocksViewModelImpl extends ViewModelBaseImpl<MyStocksViewModel.V
                         if (isEmpty) {
                             if (mStockRepo.isLoadDefaultSymbolsEnabled()) {
                                 setLoading(true);
-                                mView.loadUpdateStocksService();
+                                mView.startUpdateStocksService();
                             } else {
                                 notifyPropertyChanged(BR.empty);
                             }
@@ -188,7 +180,13 @@ public class MyStocksViewModelImpl extends ViewModelBaseImpl<MyStocksViewModel.V
         return new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
-                mView.loadUpdateStocksService();
+                if (mView.isNetworkAvailable()) {
+                    setRefreshing(true);
+                    mView.startUpdateStocksService();
+                } else {
+                    setRefreshing(false);
+                    mView.showMessage(R.string.snackbar_error_no_network);
+                }
             }
         };
     }
@@ -211,13 +209,8 @@ public class MyStocksViewModelImpl extends ViewModelBaseImpl<MyStocksViewModel.V
     @Override
     public void onDefaultSymbolsSettingsChanged() {
         if (mStockRepo.isLoadDefaultSymbolsEnabled() && mView.isNetworkAvailable()) {
-            mView.loadUpdateStocksService();
+            mView.startUpdateStocksService();
             setLoading(true);
         }
-    }
-
-    @Override
-    public void onSyncSettingsChanged() {
-        togglePeriodicUpdateService();
     }
 }

@@ -9,6 +9,7 @@ import android.support.v7.preference.PreferenceFragmentCompat;
 
 import com.sam_chordas.android.stockhawk.R;
 import com.sam_chordas.android.stockhawk.StockHawk;
+import com.sam_chordas.android.stockhawk.data.services.UpdateStocksTaskService;
 
 import javax.inject.Inject;
 
@@ -19,7 +20,6 @@ public class SettingsFragment extends PreferenceFragmentCompat
         implements SharedPreferences.OnSharedPreferenceChangeListener {
 
     public static final int RESULT_DEFAULT_SYMBOLS_CHANGED = 2;
-    public static final int RESULT_SYNC_CHANGED = 3;
     public static final String PREF_DEFAULT_SYMBOLS = "pref_default_symbols";
     public static final String PREF_SYNC = "pref_sync";
     public static final String PREF_SYNC_INTERVAL = "pref_sync_interval";
@@ -81,10 +81,22 @@ public class SettingsFragment extends PreferenceFragmentCompat
                 getActivity().setResult(RESULT_DEFAULT_SYMBOLS_CHANGED);
                 break;
             case PREF_SYNC:
-                // fall through
+                final boolean syncEnabled = mSharedPrefs.getBoolean(key, true);
+                if (syncEnabled) {
+                    startOrUpdateTaskService();
+                } else {
+                    UpdateStocksTaskService.cancel(getActivity());
+                }
+
+                break;
             case PREF_SYNC_INTERVAL:
-                getActivity().setResult(RESULT_SYNC_CHANGED);
+                startOrUpdateTaskService();
                 break;
         }
+    }
+
+    private void startOrUpdateTaskService() {
+        final long period = Long.valueOf(mSharedPrefs.getString(PREF_SYNC_INTERVAL, "3600"));
+        UpdateStocksTaskService.startOrUpdate(getActivity(), period);
     }
 }

@@ -373,11 +373,6 @@ public class StockRepositoryImpl implements StockRepository {
     }
 
     @Override
-    public boolean isSyncEnabled() {
-        return mSharedPrefs.getBoolean(SettingsFragment.PREF_SYNC, false);
-    }
-
-    @Override
     public long getSyncPeriod() {
         return Long.valueOf(mSharedPrefs.getString(SettingsFragment.PREF_SYNC_INTERVAL, "3600"));
     }
