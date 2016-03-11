@@ -1,7 +1,10 @@
 package com.sam_chordas.android.stockhawk.presentation.mystocks;
 
 import android.app.ProgressDialog;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.database.Cursor;
 import android.databinding.DataBindingUtil;
 import android.net.Uri;
@@ -11,6 +14,7 @@ import android.support.annotation.Nullable;
 import android.support.annotation.StringRes;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.helper.ItemTouchHelper;
@@ -23,6 +27,7 @@ import com.google.android.gms.gcm.PeriodicTask;
 import com.google.android.gms.gcm.Task;
 import com.sam_chordas.android.stockhawk.R;
 import com.sam_chordas.android.stockhawk.StockHawk;
+import com.sam_chordas.android.stockhawk.data.bus.LocalBroadcast;
 import com.sam_chordas.android.stockhawk.data.provider.QuoteProvider;
 import com.sam_chordas.android.stockhawk.data.services.UpdateStocksIntentService;
 import com.sam_chordas.android.stockhawk.data.services.UpdateStocksTaskService;
@@ -48,6 +53,15 @@ public class MyStocksActivity extends BaseActivity<MyStocksViewModel>
 
     private static final int CURSOR_LOADER_ID = 0;
     private static final String PERIODIC_UPDATE_SERVICE = "PERIODIC_UPDATE_SERVICE";
+    private final BroadcastReceiver mLocalBroadcastReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, @NonNull Intent intent) {
+            final String action = intent.getAction();
+            if (action.equals(LocalBroadcast.ACTION_DATA_UPDATED)) {
+                mViewModel.onDataUpdated();
+            }
+        }
+    };
     @Inject
     StockRepository mStockRepo;
     private ActivityMyStocksBinding mBinding;
@@ -64,7 +78,7 @@ public class MyStocksActivity extends BaseActivity<MyStocksViewModel>
         mBinding.setViewModel(mViewModel);
 
         setupRecyclerView();
-        checkRefreshing();
+        setRefreshingAfterDrawn(mViewModel.isRefreshing());
         checkAddIntent(getIntent());
 
         getSupportLoaderManager().initLoader(CURSOR_LOADER_ID, null, this);
@@ -100,13 +114,17 @@ public class MyStocksActivity extends BaseActivity<MyStocksViewModel>
         touchHelper.attachToRecyclerView(mBinding.rvMyStocks);
     }
 
-    private void checkRefreshing() {
-        // work around bug that state of swipe refresh layout can only be changed after is is drawn.
-        // remove once bug is fixed
+    /**
+     * Works around bug that state of swipe refresh layout can only be changed after is is drawn.
+     * To be removed once bug is fixed
+     *
+     * @param refreshing whether to show the refreshing spinner
+     */
+    private void setRefreshingAfterDrawn(final boolean refreshing) {
         mBinding.srlMyStocks.post(new Runnable() {
             @Override
             public void run() {
-                mBinding.srlMyStocks.setRefreshing(mViewModel.isRefreshing());
+                mBinding.srlMyStocks.setRefreshing(refreshing);
             }
         });
     }
@@ -122,6 +140,21 @@ public class MyStocksActivity extends BaseActivity<MyStocksViewModel>
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
         checkAddIntent(intent);
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+
+        LocalBroadcastManager.getInstance(this).registerReceiver(mLocalBroadcastReceiver,
+                new IntentFilter(LocalBroadcast.ACTION_DATA_UPDATED));
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(mLocalBroadcastReceiver);
     }
 
     @Override
@@ -155,7 +188,6 @@ public class MyStocksActivity extends BaseActivity<MyStocksViewModel>
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
         if (data.moveToFirst()) {
             mViewModel.setLoading(false);
-            mViewModel.setRefreshing(false);
         }
         mRecyclerAdapter.swapCursor(data);
     }
@@ -187,6 +219,7 @@ public class MyStocksActivity extends BaseActivity<MyStocksViewModel>
 
     @Override
     public void loadUpdateStocksService() {
+        setRefreshingAfterDrawn(true);
         UpdateStocksIntentService.start(this);
     }
 

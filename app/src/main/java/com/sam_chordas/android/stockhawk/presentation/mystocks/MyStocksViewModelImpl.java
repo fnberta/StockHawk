@@ -97,10 +97,19 @@ public class MyStocksViewModelImpl extends ViewModelBaseImpl<MyStocksViewModel.V
         mView.loadPeriodicQueryService();
 
         if (mView.isNetworkAvailable()) {
+            // due to a bug in swipe refresh layout, this won't make the srl show the refreshing
+            // spinner because it has not been drawn yet. Hence we need to apply a hack in the
+            // activity.
+            setRefreshing(true);
             mView.loadUpdateStocksService();
         } else {
             setLoading(false);
         }
+    }
+
+    @Override
+    public void onDataUpdated() {
+        setRefreshing(false);
     }
 
     @Override
@@ -175,6 +184,7 @@ public class MyStocksViewModelImpl extends ViewModelBaseImpl<MyStocksViewModel.V
         return new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
+                setRefreshing(true);
                 mView.loadUpdateStocksService();
             }
         };
