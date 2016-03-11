@@ -8,6 +8,7 @@ import android.app.Application;
 import android.appwidget.AppWidgetManager;
 import android.content.ContentResolver;
 import android.content.SharedPreferences;
+import android.support.v4.content.LocalBroadcastManager;
 
 import com.sam_chordas.android.stockhawk.StockHawk;
 import com.sam_chordas.android.stockhawk.data.rest.YahooFinance;
@@ -30,6 +31,8 @@ public interface ApplicationComponent {
     ContentResolver getContentResolver();
 
     SharedPreferences getSharedPreferences();
+
+    LocalBroadcastManager getLocalBroadcastManager();
 
     AppWidgetManager getAppWidgetManager();
 
