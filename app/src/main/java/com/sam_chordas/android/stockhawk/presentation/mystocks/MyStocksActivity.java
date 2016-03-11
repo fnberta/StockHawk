@@ -204,7 +204,10 @@ public class MyStocksActivity extends BaseActivity<MyStocksViewModel>
         if (data.moveToFirst()) {
             mViewModel.setLoading(false);
             mViewModel.setRefreshing(false);
+        } else if (!mStockRepo.isLoadDefaultSymbolsEnabled()) {
+            mViewModel.setLoading(false);
         }
+
         mRecyclerAdapter.swapCursor(data);
     }
 

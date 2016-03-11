@@ -97,11 +97,7 @@ public class MyStocksViewModelImpl extends ViewModelBaseImpl<MyStocksViewModel.V
         togglePeriodicUpdateService();
 
         if (mView.isNetworkAvailable()) {
-            if (mStockRepo.isLoadDefaultSymbolsEnabled()) {
-                mView.loadUpdateStocksService();
-            } else {
-                setLoading(false);
-            }
+            mView.loadUpdateStocksService();
         } else {
             setLoading(false);
         }

@@ -65,8 +65,6 @@ public class StockRepositoryImpl implements StockRepository {
 
     @Override
     public boolean updateStocks() {
-        boolean successful;
-
         final Cursor cursor = mContentResolver.query(
                 QuoteProvider.Quotes.CONTENT_URI,
                 new String[]{QuoteColumns.SYMBOL},
@@ -76,24 +74,31 @@ public class StockRepositoryImpl implements StockRepository {
         );
 
         if (cursor != null && cursor.moveToFirst()) {
-            final StringBuilder selection = getSelection(cursor);
+            final String selection = getSelection(cursor);
             cursor.close();
-            successful = updateExisting(selection.toString());
-        } else {
-            successful = insertInitial();
+            if (updateExisting(selection)) {
+                updateWidget();
+                return true;
+            }
+
+            return false;
+        } else if (isLoadDefaultSymbolsEnabled()) {
+            if (insertDefault()) {
+                updateWidget();
+                return true;
+            }
+
+            return false;
         }
 
-        if (successful) {
-            updateWidget();
-        }
-
-        return successful;
+        return true;
     }
 
     @NonNull
-    private StringBuilder getSelection(@NonNull Cursor cursor) {
+    private String getSelection(@NonNull Cursor cursor) {
         final StringBuilder selection = new StringBuilder();
-        selection.append("select symbol, Bid, Change, ChangeinPercent from yahoo.finance.quotes where symbol in (");
+        selection.append("select symbol, Bid, Change, ChangeinPercent from yahoo.finance.quotes " +
+                "where symbol in (");
         do {
             selection
                     .append("\"")
@@ -105,7 +110,7 @@ public class StockRepositoryImpl implements StockRepository {
         final int length = selection.length();
         selection.replace(length - 1, length, ")");
 
-        return selection;
+        return selection.toString();
     }
 
     private boolean updateExisting(@NonNull String symbols) {
@@ -158,7 +163,7 @@ public class StockRepositoryImpl implements StockRepository {
     }
 
 
-    private boolean insertInitial() {
+    private boolean insertDefault() {
         final String selection = ("select symbol, Bid, Change, ChangeinPercent " +
                 "from yahoo.finance.quotes where symbol in " + INITIAL_SYMBOLS);
         final Call<YahooQueryResult> request = mYahooFinance.getQuotes(selection);

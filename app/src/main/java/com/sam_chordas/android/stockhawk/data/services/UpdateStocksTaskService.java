@@ -23,12 +23,9 @@ public class UpdateStocksTaskService extends GcmTaskService {
     @Override
     public int onRunTask(TaskParams params) {
         injectDependencies();
-
-        if (mStockRepo.updateStocks()) {
-            return GcmNetworkManager.RESULT_SUCCESS;
-        } else {
-            return GcmNetworkManager.RESULT_RESCHEDULE;
-        }
+        return mStockRepo.updateStocks()
+                ? GcmNetworkManager.RESULT_SUCCESS
+                : GcmNetworkManager.RESULT_RESCHEDULE;
     }
 
     private void injectDependencies() {
