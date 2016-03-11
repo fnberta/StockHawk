@@ -49,7 +49,6 @@ public class StockDetailsActivity extends BaseActivity<StockDetailsViewModel>
         final ActionBar actionBar = getSupportActionBar();
         if (actionBar != null) {
             actionBar.setTitle(stockSymbol);
-            actionBar.setDisplayHomeAsUpEnabled(true);
         }
 
         mBinding = DataBindingUtil.setContentView(this, R.layout.activity_stock_details);

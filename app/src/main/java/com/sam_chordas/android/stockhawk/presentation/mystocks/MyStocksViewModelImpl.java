@@ -94,12 +94,24 @@ public class MyStocksViewModelImpl extends ViewModelBaseImpl<MyStocksViewModel.V
 
     @Override
     public void onLoadingLocalStocks() {
-        mView.loadPeriodicQueryService();
+        togglePeriodicUpdateService();
 
         if (mView.isNetworkAvailable()) {
-            mView.loadUpdateStocksService();
+            if (mStockRepo.isLoadDefaultSymbolsEnabled()) {
+                mView.loadUpdateStocksService();
+            } else {
+                setLoading(false);
+            }
         } else {
             setLoading(false);
+        }
+    }
+
+    private void togglePeriodicUpdateService() {
+        if (mStockRepo.isSyncEnabled()) {
+            mView.loadPeriodicUpdateStocksService(mStockRepo.getSyncPeriod());
+        } else {
+            mView.cancelPeriodicUpdateStocksService();
         }
     }
 
@@ -115,7 +127,12 @@ public class MyStocksViewModelImpl extends ViewModelBaseImpl<MyStocksViewModel.V
                     @Override
                     public void onSuccess(Boolean isEmpty) {
                         if (isEmpty) {
-                            notifyPropertyChanged(BR.empty);
+                            if (mStockRepo.isLoadDefaultSymbolsEnabled()) {
+                                setLoading(true);
+                                mView.loadUpdateStocksService();
+                            } else {
+                                notifyPropertyChanged(BR.empty);
+                            }
                         }
                     }
 
@@ -193,5 +210,18 @@ public class MyStocksViewModelImpl extends ViewModelBaseImpl<MyStocksViewModel.V
     public void onChangeUnitsMenuClick() {
         mStockRepo.toggleShowPercentages();
         mView.notifyItemsChanged();
+    }
+
+    @Override
+    public void onDefaultSymbolsSettingsChanged() {
+        if (mStockRepo.isLoadDefaultSymbolsEnabled() && mView.isNetworkAvailable()) {
+            mView.loadUpdateStocksService();
+            setLoading(true);
+        }
+    }
+
+    @Override
+    public void onSyncSettingsChanged() {
+        togglePeriodicUpdateService();
     }
 }

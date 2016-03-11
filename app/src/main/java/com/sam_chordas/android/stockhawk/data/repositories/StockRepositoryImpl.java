@@ -19,6 +19,7 @@ import com.sam_chordas.android.stockhawk.data.rest.YahooFinance;
 import com.sam_chordas.android.stockhawk.data.rest.YahooQueryDetailsResult;
 import com.sam_chordas.android.stockhawk.data.rest.YahooQueryResult;
 import com.sam_chordas.android.stockhawk.domain.repositories.StockRepository;
+import com.sam_chordas.android.stockhawk.presentation.settings.SettingsFragment;
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;
@@ -359,5 +360,20 @@ public class StockRepositoryImpl implements StockRepository {
                 .putBoolean(SHOW_PERCENTAGE, !showPercentages)
                 .apply();
         updateWidget();
+    }
+
+    @Override
+    public boolean isLoadDefaultSymbolsEnabled() {
+        return mSharedPrefs.getBoolean(SettingsFragment.PREF_DEFAULT_SYMBOLS, true);
+    }
+
+    @Override
+    public boolean isSyncEnabled() {
+        return mSharedPrefs.getBoolean(SettingsFragment.PREF_SYNC, false);
+    }
+
+    @Override
+    public long getSyncPeriod() {
+        return Long.valueOf(mSharedPrefs.getString(SettingsFragment.PREF_SYNC_INTERVAL, "3600"));
     }
 }

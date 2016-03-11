@@ -1,13 +1,17 @@
 package com.sam_chordas.android.stockhawk.presentation.common;
 
 import android.os.Bundle;
+import android.os.PersistableBundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.StringRes;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.preference.PreferenceManager;
 import android.view.View;
+
+import com.sam_chordas.android.stockhawk.R;
 
 import javax.inject.Inject;
 
@@ -19,6 +23,13 @@ public abstract class BaseActivity<T extends ViewModel> extends AppCompatActivit
 
     @Inject
     protected T mViewModel;
+
+    @Override
+    public void onCreate(Bundle savedInstanceState, PersistableBundle persistentState) {
+        super.onCreate(savedInstanceState, persistentState);
+
+        PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
+    }
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {

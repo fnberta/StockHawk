@@ -24,4 +24,13 @@
     <string name="stock_details_empty">No details available</string>
     <string name="my_stock_empty">No stock symbols saved</string>
     <string name="snackbar_error_delete_stock">Failed to delete stock symbol</string>
+    <string name="pref_sync_title">Enable periodic sync</string>
+    <string name="pref_sync_interval_title">Sync interval</string>
+    <string name="pref_default_symbols_title">Enable default stock symbols</string>
+    <string name="pref_default_symbols_summ">Load default stock symbols on empty list</string>
+    <string name="pref_sync_interval_15">Every 15 minutes</string>
+    <string name="pref_sync_interval_30">Every 30 minutes</string>
+    <string name="pref_sync_interval_60">Every hour</string>
+    <string name="pref_sync_interval_120">Every 2 hours</string>
+    <string name="pref_sync_interval_1440">Every day</string>
 </resources>
