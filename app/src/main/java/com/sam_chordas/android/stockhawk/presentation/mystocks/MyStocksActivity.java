@@ -12,6 +12,7 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.annotation.StringRes;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
 import android.support.v4.content.LocalBroadcastManager;
@@ -22,9 +23,8 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 
-import com.google.android.gms.gcm.GcmNetworkManager;
-import com.google.android.gms.gcm.PeriodicTask;
-import com.google.android.gms.gcm.Task;
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GoogleApiAvailability;
 import com.sam_chordas.android.stockhawk.R;
 import com.sam_chordas.android.stockhawk.StockHawk;
 import com.sam_chordas.android.stockhawk.data.bus.LocalBroadcast;
@@ -37,6 +37,8 @@ import com.sam_chordas.android.stockhawk.presentation.common.BaseActivity;
 import com.sam_chordas.android.stockhawk.presentation.mystocks.di.DaggerMyStocksComponent;
 import com.sam_chordas.android.stockhawk.presentation.mystocks.di.MyStocksComponent;
 import com.sam_chordas.android.stockhawk.presentation.mystocks.di.MyStocksViewModelModule;
+import com.sam_chordas.android.stockhawk.presentation.settings.SettingsActivity;
+import com.sam_chordas.android.stockhawk.presentation.settings.SettingsFragment;
 import com.sam_chordas.android.stockhawk.presentation.stockdetails.StockDetailsActivity;
 import com.sam_chordas.android.stockhawk.presentation.widget.QuotesWidgetProvider;
 import com.sam_chordas.android.stockhawk.utils.Utils;
@@ -45,6 +47,10 @@ import javax.inject.Inject;
 
 import rx.Single;
 
+/**
+ * Displays the user's saved stock symbols and their values in a list and allows the user to search
+ * and add new symbols via a {@link FloatingActionButton}.
+ */
 public class MyStocksActivity extends BaseActivity<MyStocksViewModel>
         implements LoaderManager.LoaderCallbacks<Cursor>,
         MyStocksViewModel.ViewListener,
@@ -52,7 +58,8 @@ public class MyStocksActivity extends BaseActivity<MyStocksViewModel>
         SaveStockWorkerListener {
 
     private static final int CURSOR_LOADER_ID = 0;
-    private static final String PERIODIC_UPDATE_SERVICE = "PERIODIC_UPDATE_SERVICE";
+    private static final int RC_PLAY_SERVICES = 1;
+    private static final int RC_SETTINGS = 2;
     private final BroadcastReceiver mLocalBroadcastReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, @NonNull Intent intent) {
@@ -77,8 +84,10 @@ public class MyStocksActivity extends BaseActivity<MyStocksViewModel>
         mBinding = DataBindingUtil.setContentView(this, R.layout.activity_my_stocks);
         mBinding.setViewModel(mViewModel);
 
+        checkPlayServicesAvailable();
+
         setupRecyclerView();
-        setRefreshingAfterDrawn(mViewModel.isRefreshing());
+        checkRefreshing();
         checkAddIntent(getIntent());
 
         getSupportLoaderManager().initLoader(CURSOR_LOADER_ID, null, this);
@@ -90,6 +99,20 @@ public class MyStocksActivity extends BaseActivity<MyStocksViewModel>
                 .myStocksViewModelModule(new MyStocksViewModelModule(savedInstanceState, this))
                 .build();
         mComponent.inject(this);
+    }
+
+    private void checkPlayServicesAvailable() {
+        final GoogleApiAvailability availability = GoogleApiAvailability.getInstance();
+        final int resultCode = availability.isGooglePlayServicesAvailable(this);
+
+        if (resultCode != ConnectionResult.SUCCESS) {
+            if (availability.isUserResolvableError(resultCode)) {
+                // Show dialog to resolve the error.
+                availability.getErrorDialog(this, resultCode, RC_PLAY_SERVICES).show();
+            } else {
+                showMessage(R.string.snackbar_error_google_play_services);
+            }
+        }
     }
 
     private void setupRecyclerView() {
@@ -114,17 +137,13 @@ public class MyStocksActivity extends BaseActivity<MyStocksViewModel>
         touchHelper.attachToRecyclerView(mBinding.rvMyStocks);
     }
 
-    /**
-     * Works around bug that state of swipe refresh layout can only be changed after is is drawn.
-     * To be removed once bug is fixed
-     *
-     * @param refreshing whether to show the refreshing spinner
-     */
-    private void setRefreshingAfterDrawn(final boolean refreshing) {
+    private void checkRefreshing() {
+        // work around bug that state of swipe refresh layout can only be changed after is is drawn.
+        // remove once bug is fixed
         mBinding.srlMyStocks.post(new Runnable() {
             @Override
             public void run() {
-                mBinding.srlMyStocks.setRefreshing(refreshing);
+                mBinding.srlMyStocks.setRefreshing(mViewModel.isRefreshing());
             }
         });
     }
@@ -168,13 +187,27 @@ public class MyStocksActivity extends BaseActivity<MyStocksViewModel>
         final int id = item.getItemId();
         switch (id) {
             case R.id.action_settings:
-                // TODO: load settings if there are any
+                startSettingsScreen();
                 return true;
             case R.id.action_change_units:
                 mViewModel.onChangeUnitsMenuClick();
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
+        }
+    }
+
+    private void startSettingsScreen() {
+        final Intent intent = new Intent(this, SettingsActivity.class);
+        startActivityForResult(intent, RC_SETTINGS);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == RC_SETTINGS && resultCode == SettingsFragment.RESULT_DEFAULT_SYMBOLS_CHANGED) {
+            mViewModel.onDefaultSymbolsSettingsChanged();
         }
     }
 
@@ -188,7 +221,11 @@ public class MyStocksActivity extends BaseActivity<MyStocksViewModel>
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
         if (data.moveToFirst()) {
             mViewModel.setLoading(false);
+            mViewModel.setRefreshing(false);
+        } else if (!mStockRepo.isLoadDefaultSymbolsEnabled()) {
+            mViewModel.setLoading(false);
         }
+
         mRecyclerAdapter.swapCursor(data);
     }
 
@@ -218,22 +255,13 @@ public class MyStocksActivity extends BaseActivity<MyStocksViewModel>
     }
 
     @Override
-    public void loadUpdateStocksService() {
-        setRefreshingAfterDrawn(true);
+    public void startUpdateStocksService() {
         UpdateStocksIntentService.start(this);
     }
 
     @Override
-    public void loadPeriodicQueryService() {
-        final PeriodicTask periodicTask = new PeriodicTask.Builder()
-                .setService(UpdateStocksTaskService.class)
-                .setTag(PERIODIC_UPDATE_SERVICE)
-                .setPeriod(3600L)
-                .setFlex(10L)
-                .setRequiredNetwork(Task.NETWORK_STATE_CONNECTED)
-                .setRequiresCharging(false)
-                .build();
-        GcmNetworkManager.getInstance(this).schedule(periodicTask);
+    public void startPeriodicUpdateStocksService(long period) {
+        UpdateStocksTaskService.startOrUpdate(this, period);
     }
 
     @Override

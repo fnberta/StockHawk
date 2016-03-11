@@ -15,13 +15,12 @@ import dagger.Module;
 import dagger.Provides;
 
 /**
- * Defines which implementation to use for the paid compensations view model and how to instantiate
- * it.
+ * Defines how the stock details loader is constructed.
  */
 @Module
 public class StockDetailsLoaderModule {
 
-    private String mStockSymbol;
+    private final String mStockSymbol;
 
     public StockDetailsLoaderModule(@NonNull String stockSymbol) {
         mStockSymbol = stockSymbol;

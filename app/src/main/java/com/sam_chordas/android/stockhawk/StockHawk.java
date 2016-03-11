@@ -9,7 +9,7 @@ import com.sam_chordas.android.stockhawk.di.ApplicationModule;
 import com.sam_chordas.android.stockhawk.di.DaggerApplicationComponent;
 
 /**
- * Created by fabio on 07.03.16.
+ * Instantiates application wide components.
  */
 public class StockHawk extends Application {
 

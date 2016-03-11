@@ -20,14 +20,14 @@ import rx.Single;
 import rx.SingleSubscriber;
 
 /**
- * Created by fabio on 07.03.16.
+ * Provides an implementation of the {@link MyStocksViewModel} interface.
  */
 public class MyStocksViewModelImpl extends ViewModelBaseImpl<MyStocksViewModel.ViewListener>
         implements MyStocksViewModel {
 
     private static final String STATE_LOADING = "STATE_LOADING";
     private static final String STATE_REFRESHING = "STATE_REFRESHING";
-    private StockRepository mStockRepo;
+    private final StockRepository mStockRepo;
     private boolean mLoading;
     private boolean mRefreshing;
 
@@ -94,14 +94,10 @@ public class MyStocksViewModelImpl extends ViewModelBaseImpl<MyStocksViewModel.V
 
     @Override
     public void onLoadingLocalStocks() {
-        mView.loadPeriodicQueryService();
+        mView.startPeriodicUpdateStocksService(mStockRepo.getSyncPeriod());
 
         if (mView.isNetworkAvailable()) {
-            // due to a bug in swipe refresh layout, this won't make the srl show the refreshing
-            // spinner because it has not been drawn yet. Hence we need to apply a hack in the
-            // activity.
-            setRefreshing(true);
-            mView.loadUpdateStocksService();
+            mView.startUpdateStocksService();
         } else {
             setLoading(false);
         }
@@ -124,7 +120,12 @@ public class MyStocksViewModelImpl extends ViewModelBaseImpl<MyStocksViewModel.V
                     @Override
                     public void onSuccess(Boolean isEmpty) {
                         if (isEmpty) {
-                            notifyPropertyChanged(BR.empty);
+                            if (mStockRepo.isLoadDefaultSymbolsEnabled()) {
+                                setLoading(true);
+                                mView.startUpdateStocksService();
+                            } else {
+                                notifyPropertyChanged(BR.empty);
+                            }
                         }
                     }
 
@@ -184,8 +185,13 @@ public class MyStocksViewModelImpl extends ViewModelBaseImpl<MyStocksViewModel.V
         return new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
-                setRefreshing(true);
-                mView.loadUpdateStocksService();
+                if (mView.isNetworkAvailable()) {
+                    mRefreshing = true;
+                    mView.startUpdateStocksService();
+                } else {
+                    setRefreshing(false);
+                    mView.showMessage(R.string.snackbar_error_no_network);
+                }
             }
         };
     }
@@ -203,5 +209,13 @@ public class MyStocksViewModelImpl extends ViewModelBaseImpl<MyStocksViewModel.V
     public void onChangeUnitsMenuClick() {
         mStockRepo.toggleShowPercentages();
         mView.notifyItemsChanged();
+    }
+
+    @Override
+    public void onDefaultSymbolsSettingsChanged() {
+        if (mStockRepo.isLoadDefaultSymbolsEnabled() && mView.isNetworkAvailable()) {
+            mView.startUpdateStocksService();
+            setLoading(true);
+        }
     }
 }

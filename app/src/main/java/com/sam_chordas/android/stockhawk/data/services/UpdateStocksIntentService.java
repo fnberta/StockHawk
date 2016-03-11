@@ -14,7 +14,7 @@ import com.sam_chordas.android.stockhawk.domain.repositories.StockRepository;
 import javax.inject.Inject;
 
 /**
- * Created by sam_chordas on 10/1/15.
+ * Provides an {@link IntentService} that updates the locally stored stock values.
  */
 public class UpdateStocksIntentService extends IntentService {
 

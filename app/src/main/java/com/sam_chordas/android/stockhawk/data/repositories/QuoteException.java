@@ -7,11 +7,11 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
 /**
- * Created by fabio on 08.03.16.
+ * Defines an exception with two different codes, in order to display different error messages.
  */
 public class QuoteException extends RuntimeException {
 
-    private int mCode;
+    private final int mCode;
 
     public QuoteException(@Code int code) {
         mCode = code;

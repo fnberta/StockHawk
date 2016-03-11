@@ -23,13 +23,13 @@ import rx.Observable;
 import rx.Subscriber;
 
 /**
- * Created by fabio on 08.03.16.
+ * Provides an implementation of the {@link StockDetailsViewModel} interface.
  */
 public class StockDetailsViewModelImpl extends ViewModelBaseImpl<StockDetailsViewModel.ViewListener>
         implements StockDetailsViewModel {
 
     private static final String STATE_LOADING = "STATE_LOADING";
-    private StockDetails mStockDetails;
+    private final StockDetails mStockDetails;
     private LineData mChartData;
     private boolean mLoading;
 
@@ -85,7 +85,13 @@ public class StockDetailsViewModelImpl extends ViewModelBaseImpl<StockDetailsVie
     }
 
     @Override
-    public void onDataLoaded(@NonNull Observable<QuoteTime> data) {
+    public void onDataLoaded(@Nullable Observable<QuoteTime> data) {
+        if (data == null) {
+            setLoading(false);
+            mView.showMessage(R.string.snackbar_error_stock_details);
+            return;
+        }
+
         getSubscriptions().add(data
                 .subscribe(new Subscriber<QuoteTime>() {
                     @Override
@@ -125,11 +131,5 @@ public class StockDetailsViewModelImpl extends ViewModelBaseImpl<StockDetailsVie
         mView.setChartColors(lineDataSet);
         final LineData data = new LineData(xVals, lineDataSet);
         setChartData(data);
-    }
-
-    @Override
-    public void onDataLoadFailed() {
-        setLoading(false);
-        mView.showMessage(R.string.snackbar_error_stock_details);
     }
 }

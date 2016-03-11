@@ -19,6 +19,7 @@ import com.sam_chordas.android.stockhawk.data.rest.YahooFinance;
 import com.sam_chordas.android.stockhawk.data.rest.YahooQueryDetailsResult;
 import com.sam_chordas.android.stockhawk.data.rest.YahooQueryResult;
 import com.sam_chordas.android.stockhawk.domain.repositories.StockRepository;
+import com.sam_chordas.android.stockhawk.presentation.settings.SettingsFragment;
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;
@@ -38,17 +39,17 @@ import rx.functions.Func1;
 import rx.schedulers.Schedulers;
 
 /**
- * Created by fabio on 07.03.16.
+ * Provides an implementation of the {@link StockRepository} interface.
  */
 public class StockRepositoryImpl implements StockRepository {
 
     private static final String SHOW_PERCENTAGE = "SHOW_PERCENTAGE";
     private static final String INITIAL_SYMBOLS = "(\"YHOO\",\"AAPL\",\"GOOG\",\"MSFT\")";
-    private ContentResolver mContentResolver;
-    private AppWidgetManager mAppWidgetManager;
-    private ComponentName mWidgetProviderComp;
-    private SharedPreferences mSharedPrefs;
-    private YahooFinance mYahooFinance;
+    private final ContentResolver mContentResolver;
+    private final AppWidgetManager mAppWidgetManager;
+    private final ComponentName mWidgetProviderComp;
+    private final SharedPreferences mSharedPrefs;
+    private final YahooFinance mYahooFinance;
 
     public StockRepositoryImpl(@NonNull ContentResolver contentResolver,
                                @NonNull AppWidgetManager appWidgetManager,
@@ -64,8 +65,6 @@ public class StockRepositoryImpl implements StockRepository {
 
     @Override
     public boolean updateStocks() {
-        boolean successful;
-
         final Cursor cursor = mContentResolver.query(
                 QuoteProvider.Quotes.CONTENT_URI,
                 new String[]{QuoteColumns.SYMBOL},
@@ -75,24 +74,31 @@ public class StockRepositoryImpl implements StockRepository {
         );
 
         if (cursor != null && cursor.moveToFirst()) {
-            final StringBuilder selection = getSelection(cursor);
+            final String selection = getSelection(cursor);
             cursor.close();
-            successful = updateExisting(selection.toString());
-        } else {
-            successful = insertInitial();
+            if (updateExisting(selection)) {
+                updateWidget();
+                return true;
+            }
+
+            return false;
+        } else if (isLoadDefaultSymbolsEnabled()) {
+            if (insertDefault()) {
+                updateWidget();
+                return true;
+            }
+
+            return false;
         }
 
-        if (successful) {
-            updateWidget();
-        }
-
-        return successful;
+        return true;
     }
 
     @NonNull
-    private StringBuilder getSelection(@NonNull Cursor cursor) {
+    private String getSelection(@NonNull Cursor cursor) {
         final StringBuilder selection = new StringBuilder();
-        selection.append("select symbol, Bid, Change, ChangeinPercent from yahoo.finance.quotes where symbol in (");
+        selection.append("select symbol, Bid, Change, ChangeinPercent from yahoo.finance.quotes " +
+                "where symbol in (");
         do {
             selection
                     .append("\"")
@@ -104,7 +110,7 @@ public class StockRepositoryImpl implements StockRepository {
         final int length = selection.length();
         selection.replace(length - 1, length, ")");
 
-        return selection;
+        return selection.toString();
     }
 
     private boolean updateExisting(@NonNull String symbols) {
@@ -157,7 +163,7 @@ public class StockRepositoryImpl implements StockRepository {
     }
 
 
-    private boolean insertInitial() {
+    private boolean insertDefault() {
         final String selection = ("select symbol, Bid, Change, ChangeinPercent " +
                 "from yahoo.finance.quotes where symbol in " + INITIAL_SYMBOLS);
         final Call<YahooQueryResult> request = mYahooFinance.getQuotes(selection);
@@ -359,5 +365,15 @@ public class StockRepositoryImpl implements StockRepository {
                 .putBoolean(SHOW_PERCENTAGE, !showPercentages)
                 .apply();
         updateWidget();
+    }
+
+    @Override
+    public boolean isLoadDefaultSymbolsEnabled() {
+        return mSharedPrefs.getBoolean(SettingsFragment.PREF_DEFAULT_SYMBOLS, true);
+    }
+
+    @Override
+    public long getSyncPeriod() {
+        return Long.valueOf(mSharedPrefs.getString(SettingsFragment.PREF_SYNC_INTERVAL, "3600"));
     }
 }

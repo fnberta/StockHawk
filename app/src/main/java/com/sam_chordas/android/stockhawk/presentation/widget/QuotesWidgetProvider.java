@@ -11,11 +11,12 @@ import android.widget.RemoteViews;
 
 import com.sam_chordas.android.stockhawk.BuildConfig;
 import com.sam_chordas.android.stockhawk.R;
+import com.sam_chordas.android.stockhawk.data.services.QuotesWidgetService;
 import com.sam_chordas.android.stockhawk.presentation.mystocks.MyStocksActivity;
 import com.sam_chordas.android.stockhawk.presentation.stockdetails.StockDetailsActivity;
 
 /**
- * Created by fabio on 09.03.16.
+ * Provides a provider for the my stocks widget.
  */
 public class QuotesWidgetProvider extends AppWidgetProvider {
 

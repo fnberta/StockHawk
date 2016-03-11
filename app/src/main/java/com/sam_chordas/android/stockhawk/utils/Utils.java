@@ -7,11 +7,10 @@ import android.support.annotation.NonNull;
 
 import java.text.DateFormat;
 import java.text.NumberFormat;
-import java.util.ArrayList;
 import java.util.Locale;
 
 /**
- * Created by sam_chordas on 10/8/15.
+ * Provides static utility methods.
  */
 public class Utils {
 
@@ -29,7 +28,7 @@ public class Utils {
                 (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
 
         final NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
-        return activeNetwork != null && activeNetwork.isConnectedOrConnecting();
+        return activeNetwork != null && activeNetwork.isConnected();
     }
 
     /**
@@ -65,9 +64,5 @@ public class Utils {
      */
     public static boolean isNegative(double d) {
         return Double.doubleToRawLongBits(d) < 0;
-    }
-
-    public static ArrayList quoteJsonToContentVals(String JSON) {
-        return null;
     }
 }

@@ -2,6 +2,7 @@ package com.sam_chordas.android.stockhawk.presentation.stockdetails;
 
 import android.databinding.Bindable;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 
 import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.data.LineDataSet;
@@ -11,7 +12,7 @@ import com.sam_chordas.android.stockhawk.presentation.common.ViewModel;
 import rx.Observable;
 
 /**
- * Created by fabio on 08.03.16.
+ * Defines an observable view model for the stock details screen.
  */
 public interface StockDetailsViewModel extends ViewModel {
 
@@ -28,9 +29,7 @@ public interface StockDetailsViewModel extends ViewModel {
 
     void setChartData(@NonNull LineData chartData);
 
-    void onDataLoaded(@NonNull Observable<QuoteTime> data);
-
-    void onDataLoadFailed();
+    void onDataLoaded(@Nullable Observable<QuoteTime> data);
 
     interface ViewListener extends ViewModel.ViewListener {
 

@@ -16,7 +16,8 @@ import javax.inject.Inject;
 import rx.Observable;
 
 /**
- * Created by fabio on 08.03.16.
+ * Hosts the {@link Observable} that fetches the data for a newly entered stock symbol and saves it
+ * to the local data store.
  */
 public class SaveStockWorker extends BaseRxWorker<Uri, SaveStockWorkerListener> {
 

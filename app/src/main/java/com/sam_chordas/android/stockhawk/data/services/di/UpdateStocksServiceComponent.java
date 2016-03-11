@@ -4,16 +4,16 @@
 
 package com.sam_chordas.android.stockhawk.data.services.di;
 
+import com.sam_chordas.android.stockhawk.data.services.UpdateStocksIntentService;
+import com.sam_chordas.android.stockhawk.data.services.UpdateStocksTaskService;
 import com.sam_chordas.android.stockhawk.di.ApplicationComponent;
 import com.sam_chordas.android.stockhawk.di.RepositoriesModule;
 import com.sam_chordas.android.stockhawk.di.scopes.PerService;
-import com.sam_chordas.android.stockhawk.data.services.UpdateStocksIntentService;
-import com.sam_chordas.android.stockhawk.data.services.UpdateStocksTaskService;
 
 import dagger.Component;
 
 /**
- * Provides the dependencies for the update stocks service.
+ * Provides the dependencies for the update stocks services.
  *
  * @see {@link UpdateStocksIntentService}
  */

@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by fabio on 07.03.16.
+ * Represents one stock symbol and its value over time.
  */
 public class StockDetails {
 

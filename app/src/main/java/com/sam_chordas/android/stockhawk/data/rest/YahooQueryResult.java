@@ -5,6 +5,9 @@ import com.google.gson.annotations.SerializedName;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Defines the results of a query to the Yahoo Finance API for stock quotes.
+ */
 public class YahooQueryResult {
 
     @SerializedName("query")

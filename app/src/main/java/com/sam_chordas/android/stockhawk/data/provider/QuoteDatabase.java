@@ -4,7 +4,7 @@ import net.simonvt.schematic.annotation.Database;
 import net.simonvt.schematic.annotation.Table;
 
 /**
- * Created by sam_chordas on 10/5/15.
+ * Defines the table name and version of the local sqlite database.
  */
 @Database(version = QuoteDatabase.VERSION)
 public class QuoteDatabase {

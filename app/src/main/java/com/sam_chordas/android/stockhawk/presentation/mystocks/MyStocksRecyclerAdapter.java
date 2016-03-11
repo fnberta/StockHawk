@@ -33,14 +33,14 @@ import com.sam_chordas.android.stockhawk.presentation.common.SwipeToDismissAdapt
 
 
 /**
- * Provides the adapter for a movie poster images grid.
+ * Provides the adapter for the list of stock symbols and their values.
  */
 public class MyStocksRecyclerAdapter extends RecyclerView.Adapter<MyStocksRecyclerAdapter.StockRow>
         implements SwipeToDismissAdapter {
 
+    private final MyStocksViewModel mViewModel;
+    private final StockRepository mStockRepo;
     private Cursor mCursor;
-    private MyStocksViewModel mViewModel;
-    private StockRepository mStockRepo;
     private int mRowIdColumn;
     private boolean mDataValid;
 
@@ -141,19 +141,41 @@ public class MyStocksRecyclerAdapter extends RecyclerView.Adapter<MyStocksRecycl
         mViewModel.onDeleteStockItem(rowId);
     }
 
+    /**
+     * Returns whether the cursor is valid and not empty.
+     *
+     * @return whether the cursor is valid and not empty
+     */
     public boolean isDataAvailable() {
         return mDataValid && mCursor.moveToFirst();
     }
 
+    /**
+     * Returns the symbol for the given position.
+     *
+     * @param position the position to return the symbol for
+     * @return the symbol for the given position
+     */
     public String getSymbolForPosition(int position) {
         mCursor.moveToPosition(position);
         return mCursor.getString(mCursor.getColumnIndex(QuoteColumns.SYMBOL));
     }
 
+    /**
+     * Defines the interaction with the view.
+     */
     public interface AdapterListener {
+        /**
+         * Launches the detail screen for the clicked stock symbol.
+         *
+         * @param position the position of the clicked symbol
+         */
         void onStockItemClick(int position);
     }
 
+    /**
+     * Provides a bindable {@link RecyclerView} row for a stock and its value.
+     */
     public static class StockRow extends BaseBindingRow<ItemMyStocksBinding> {
 
         public StockRow(@NonNull ItemMyStocksBinding binding,

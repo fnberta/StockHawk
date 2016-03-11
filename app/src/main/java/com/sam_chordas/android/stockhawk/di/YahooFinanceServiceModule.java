@@ -29,12 +29,13 @@ import retrofit2.adapter.rxjava.RxJavaCallAdapterFactory;
 import retrofit2.converter.gson.GsonConverterFactory;
 
 /**
- * Defines how the application wide rest services are instantiated.
+ * Defines how the Yahoo Finance API REST service is instantiated.
  */
 @Module
 public class YahooFinanceServiceModule {
 
     private static final String BASE_URL_YAHOO = "https://query.yahooapis.com/v1/public/";
+    private static final String DATE_FORMAT = "yyyy-MM-dd";
 
     @Provides
     @Singleton
@@ -60,7 +61,7 @@ public class YahooFinanceServiceModule {
                         return quotes;
                     }
                 })
-                .setDateFormat("yyyy-MM-dd")
+                .setDateFormat(DATE_FORMAT)
                 .create();
     }
 

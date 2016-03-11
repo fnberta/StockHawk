@@ -7,7 +7,7 @@ import net.simonvt.schematic.annotation.PrimaryKey;
 import net.simonvt.schematic.annotation.Unique;
 
 /**
- * Created by sam_chordas on 10/5/15.
+ * Defines the columns for the local sqlite database.
  */
 public class QuoteColumns {
 
