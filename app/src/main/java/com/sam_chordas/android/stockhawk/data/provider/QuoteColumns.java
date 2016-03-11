@@ -1,5 +1,7 @@
 package com.sam_chordas.android.stockhawk.data.provider;
 
+import android.provider.BaseColumns;
+
 import net.simonvt.schematic.annotation.AutoIncrement;
 import net.simonvt.schematic.annotation.DataType;
 import net.simonvt.schematic.annotation.NotNull;
@@ -14,7 +16,7 @@ public class QuoteColumns {
     @DataType(DataType.Type.INTEGER)
     @PrimaryKey
     @AutoIncrement
-    public static final String _ID = "_id";
+    public static final String _ID = BaseColumns._ID;
 
     @DataType(DataType.Type.TEXT)
     @NotNull

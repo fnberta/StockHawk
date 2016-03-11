@@ -69,10 +69,10 @@ public class MyStocksRecyclerAdapter extends RecyclerView.Adapter<MyStocksRecycl
             throw new IllegalStateException("couldn't move cursor to position " + position);
         }
 
-        final String symbol = mCursor.getString(mCursor.getColumnIndex(QuoteColumns.SYMBOL));
-        final double bidPrice = mCursor.getDouble(mCursor.getColumnIndex(QuoteColumns.BID_PRICE));
-        final double changeValue = mCursor.getDouble(mCursor.getColumnIndex(QuoteColumns.CHANGE));
-        final String changePercent = mCursor.getString(mCursor.getColumnIndex(QuoteColumns.PERCENT_CHANGE));
+        final String symbol = mCursor.getString(mCursor.getColumnIndexOrThrow(QuoteColumns.SYMBOL));
+        final double bidPrice = mCursor.getDouble(mCursor.getColumnIndexOrThrow(QuoteColumns.BID_PRICE));
+        final double changeValue = mCursor.getDouble(mCursor.getColumnIndexOrThrow(QuoteColumns.CHANGE));
+        final String changePercent = mCursor.getString(mCursor.getColumnIndexOrThrow(QuoteColumns.PERCENT_CHANGE));
 
         final ItemMyStocksBinding binding = holder.getBinding();
         final StockRowViewModel viewModel = binding.getViewModel();
@@ -137,7 +137,7 @@ public class MyStocksRecyclerAdapter extends RecyclerView.Adapter<MyStocksRecycl
     @Override
     public void onItemDismiss(int position) {
         mCursor.moveToPosition(position);
-        final long rowId = mCursor.getLong(mCursor.getColumnIndex(QuoteColumns._ID));
+        final long rowId = mCursor.getLong(mCursor.getColumnIndexOrThrow(QuoteColumns._ID));
         mViewModel.onDeleteStockItem(rowId);
     }
 
@@ -158,7 +158,7 @@ public class MyStocksRecyclerAdapter extends RecyclerView.Adapter<MyStocksRecycl
      */
     public String getSymbolForPosition(int position) {
         mCursor.moveToPosition(position);
-        return mCursor.getString(mCursor.getColumnIndex(QuoteColumns.SYMBOL));
+        return mCursor.getString(mCursor.getColumnIndexOrThrow(QuoteColumns.SYMBOL));
     }
 
     /**

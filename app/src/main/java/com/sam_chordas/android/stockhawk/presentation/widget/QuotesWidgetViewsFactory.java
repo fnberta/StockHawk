@@ -88,10 +88,10 @@ public class QuotesWidgetViewsFactory implements RemoteViewsService.RemoteViewsF
         final RemoteViews rv = new RemoteViews(mContext.getPackageName(),
                 R.layout.item_widget_my_stocks);
 
-        final String symbol = mCursor.getString(mCursor.getColumnIndex(QuoteColumns.SYMBOL));
-        final double bidPrice = mCursor.getDouble(mCursor.getColumnIndex(QuoteColumns.BID_PRICE));
-        final String changePercent = mCursor.getString(mCursor.getColumnIndex(QuoteColumns.PERCENT_CHANGE));
-        final double changeValue = mCursor.getDouble(mCursor.getColumnIndex(QuoteColumns.CHANGE));
+        final String symbol = mCursor.getString(mCursor.getColumnIndexOrThrow(QuoteColumns.SYMBOL));
+        final double bidPrice = mCursor.getDouble(mCursor.getColumnIndexOrThrow(QuoteColumns.BID_PRICE));
+        final String changePercent = mCursor.getString(mCursor.getColumnIndexOrThrow(QuoteColumns.PERCENT_CHANGE));
+        final double changeValue = mCursor.getDouble(mCursor.getColumnIndexOrThrow(QuoteColumns.CHANGE));
         final String change = mStockRepo.showPercentages() ? changePercent : mNumberFormat.format(changeValue);
         final int changeBackground = Utils.isNegative(changeValue)
                 ? R.drawable.percent_change_pill_red

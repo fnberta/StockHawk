@@ -102,7 +102,7 @@ public class StockRepositoryImpl implements StockRepository {
         do {
             selection
                     .append("\"")
-                    .append(cursor.getString(cursor.getColumnIndex(QuoteColumns.SYMBOL)))
+                    .append(cursor.getString(cursor.getColumnIndexOrThrow(QuoteColumns.SYMBOL)))
                     .append("\",");
         } while (cursor.moveToNext());
 
