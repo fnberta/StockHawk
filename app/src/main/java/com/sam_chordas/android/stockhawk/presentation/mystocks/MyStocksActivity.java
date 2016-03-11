@@ -88,7 +88,6 @@ public class MyStocksActivity extends BaseActivity<MyStocksViewModel>
         checkPlayServicesAvailable();
 
         setupRecyclerView();
-        checkRefreshing();
         checkAddIntent(getIntent());
 
         getSupportLoaderManager().initLoader(CURSOR_LOADER_ID, null, this);
@@ -136,17 +135,6 @@ public class MyStocksActivity extends BaseActivity<MyStocksViewModel>
             }
         });
         touchHelper.attachToRecyclerView(mBinding.rvMyStocks);
-    }
-
-    private void checkRefreshing() {
-        // work around bug that state of swipe refresh layout can only be changed after it is drawn
-        // TODO: remove once bug is fixed
-        mBinding.srlMyStocks.post(new Runnable() {
-            @Override
-            public void run() {
-                mBinding.srlMyStocks.setRefreshing(mViewModel.isRefreshing());
-            }
-        });
     }
 
     private void checkAddIntent(@NonNull Intent intent) {
@@ -222,7 +210,6 @@ public class MyStocksActivity extends BaseActivity<MyStocksViewModel>
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
         if (data.moveToFirst()) {
             mViewModel.setLoading(false);
-            mViewModel.setRefreshing(false);
         } else if (!mStockRepo.isLoadDefaultSymbolsEnabled()) {
             mViewModel.setLoading(false);
         }

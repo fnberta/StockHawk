@@ -19,7 +19,7 @@
         android:layout_height="match_parent"
         >
 
-        <android.support.v4.widget.SwipeRefreshLayout
+        <com.sam_chordas.android.stockhawk.presentation.mystocks.widgets.SwipeRefreshLayoutHack
             android:id="@+id/srl_my_stocks"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
@@ -35,7 +35,7 @@
                 android:visibility="@{viewModel.loading ? View.GONE : View.VISIBLE}"
                 />
 
-        </android.support.v4.widget.SwipeRefreshLayout>
+        </com.sam_chordas.android.stockhawk.presentation.mystocks.widgets.SwipeRefreshLayoutHack>
 
         <LinearLayout
             android:layout_width="match_parent"

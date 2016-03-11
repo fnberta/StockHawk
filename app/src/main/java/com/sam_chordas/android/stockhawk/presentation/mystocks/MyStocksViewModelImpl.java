@@ -105,10 +105,10 @@ public class MyStocksViewModelImpl extends ViewModelBaseImpl<MyStocksViewModel.V
 
     @Override
     public void onDataUpdated(boolean successful) {
+        setRefreshing(false);
         // If successful, loader will automatically re-query the data. But if not, hide refreshing
         // spinner and show error message
         if (!successful) {
-            setRefreshing(false);
             mView.showMessage(R.string.snackbar_error_update_stocks);
         }
     }
