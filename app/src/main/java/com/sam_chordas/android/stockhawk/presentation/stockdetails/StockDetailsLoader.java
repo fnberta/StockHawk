@@ -8,17 +8,15 @@ import com.sam_chordas.android.stockhawk.data.rest.QuoteTime;
 import com.sam_chordas.android.stockhawk.domain.repositories.StockRepository;
 import com.sam_chordas.android.stockhawk.presentation.common.BaseRxLoader;
 
-import javax.inject.Inject;
-
 import rx.Observable;
 
 /**
- * Created by fabio on 08.03.16.
+ * Loads the stock's value over the last 6 months from the internet.
  */
 public class StockDetailsLoader extends BaseRxLoader<QuoteTime> {
 
-    private StockRepository mStockRepo;
-    private String mStockSymbol;
+    private final StockRepository mStockRepo;
+    private final String mStockSymbol;
 
     public StockDetailsLoader(@NonNull Application context, @NonNull StockRepository stockRepo,
                               @NonNull String stockSymbol) {

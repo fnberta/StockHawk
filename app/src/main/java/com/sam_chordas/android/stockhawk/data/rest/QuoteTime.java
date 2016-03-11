@@ -5,7 +5,7 @@ import com.google.gson.annotations.SerializedName;
 import java.util.Date;
 
 /**
- * Created by fabio on 08.03.16.
+ * Represents a value in time of a stock quote.
  */
 public class QuoteTime {
 

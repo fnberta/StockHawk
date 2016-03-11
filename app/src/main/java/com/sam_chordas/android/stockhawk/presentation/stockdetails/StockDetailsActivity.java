@@ -29,6 +29,9 @@ import javax.inject.Inject;
 
 import rx.Observable;
 
+/**
+ * Displays a stock's value over the last 6 months in a line chart.
+ */
 public class StockDetailsActivity extends BaseActivity<StockDetailsViewModel>
         implements StockDetailsViewModel.ViewListener,
         LoaderManager.LoaderCallbacks<Observable<QuoteTime>> {
@@ -105,11 +108,7 @@ public class StockDetailsActivity extends BaseActivity<StockDetailsViewModel>
 
     @Override
     public void onLoadFinished(Loader<Observable<QuoteTime>> loader, Observable<QuoteTime> data) {
-        if (data != null) {
-            mViewModel.onDataLoaded(data);
-        } else {
-            mViewModel.onDataLoadFailed();
-        }
+        mViewModel.onDataLoaded(data);
     }
 
     @Override

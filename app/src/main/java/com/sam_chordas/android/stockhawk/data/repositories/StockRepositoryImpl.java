@@ -39,17 +39,17 @@ import rx.functions.Func1;
 import rx.schedulers.Schedulers;
 
 /**
- * Created by fabio on 07.03.16.
+ * Provides an implementation of the {@link StockRepository} interface.
  */
 public class StockRepositoryImpl implements StockRepository {
 
     private static final String SHOW_PERCENTAGE = "SHOW_PERCENTAGE";
     private static final String INITIAL_SYMBOLS = "(\"YHOO\",\"AAPL\",\"GOOG\",\"MSFT\")";
-    private ContentResolver mContentResolver;
-    private AppWidgetManager mAppWidgetManager;
-    private ComponentName mWidgetProviderComp;
-    private SharedPreferences mSharedPrefs;
-    private YahooFinance mYahooFinance;
+    private final ContentResolver mContentResolver;
+    private final AppWidgetManager mAppWidgetManager;
+    private final ComponentName mWidgetProviderComp;
+    private final SharedPreferences mSharedPrefs;
+    private final YahooFinance mYahooFinance;
 
     public StockRepositoryImpl(@NonNull ContentResolver contentResolver,
                                @NonNull AppWidgetManager appWidgetManager,

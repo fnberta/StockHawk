@@ -1,18 +1,13 @@
 <resources>
     <!-- Spacing -->
     <dimen name="key_line_1">16dp</dimen>
-    <dimen name="key_line_2">72dp</dimen>
     <dimen name="small_space">8dp</dimen>
     <dimen name="min_space">4dp</dimen>
     <dimen name="normal_space">16dp</dimen>
 
     <!-- List tile heights -->
     <dimen name="list_with_text">48dp</dimen>
-    <dimen name="list_icon_with_text">56dp</dimen>
     <dimen name="list_avatar_with_text">56dp</dimen>
-    <dimen name="list_avatar_with_two_line_text">72dp</dimen>
-    <dimen name="avatar_plus_caption_plus_padding">72dp</dimen>
-    <dimen name="subheader_height">48dp</dimen>
 
     <!-- Dialog -->
     <dimen name="dialog_padding">24dp</dimen>

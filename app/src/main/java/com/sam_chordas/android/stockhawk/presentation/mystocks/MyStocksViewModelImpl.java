@@ -20,14 +20,14 @@ import rx.Single;
 import rx.SingleSubscriber;
 
 /**
- * Created by fabio on 07.03.16.
+ * Provides an implementation of the {@link MyStocksViewModel} interface.
  */
 public class MyStocksViewModelImpl extends ViewModelBaseImpl<MyStocksViewModel.ViewListener>
         implements MyStocksViewModel {
 
     private static final String STATE_LOADING = "STATE_LOADING";
     private static final String STATE_REFRESHING = "STATE_REFRESHING";
-    private StockRepository mStockRepo;
+    private final StockRepository mStockRepo;
     private boolean mLoading;
     private boolean mRefreshing;
 

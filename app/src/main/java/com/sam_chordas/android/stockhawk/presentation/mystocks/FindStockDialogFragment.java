@@ -14,7 +14,7 @@ import com.sam_chordas.android.stockhawk.R;
 import com.sam_chordas.android.stockhawk.databinding.DialogStockSearchBinding;
 
 /**
- * Created by fabio on 07.03.16.
+ * Provides a dialog fragment that allows to user to search and save new stock symbols.
  */
 public class FindStockDialogFragment extends DialogFragment {
 
@@ -74,6 +74,11 @@ public class FindStockDialogFragment extends DialogFragment {
      * Defines the actions to take when user clicks on one of the dialog's buttons.
      */
     public interface DialogListener {
+        /**
+         * Search and saves the entered symbol.
+         *
+         * @param stockSymbol the symbol to search and save
+         */
         void onStockEntered(@NonNull String stockSymbol);
     }
 }

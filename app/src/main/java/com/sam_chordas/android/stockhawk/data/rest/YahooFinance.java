@@ -6,7 +6,7 @@ import retrofit2.http.Query;
 import rx.Single;
 
 /**
- * Created by fabio on 07.03.16.
+ * Defines the network calls to the Yahoo Finance API.
  */
 public interface YahooFinance {
 

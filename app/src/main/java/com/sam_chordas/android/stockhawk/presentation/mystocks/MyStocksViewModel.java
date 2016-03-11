@@ -3,15 +3,13 @@ package com.sam_chordas.android.stockhawk.presentation.mystocks;
 import android.databinding.Bindable;
 import android.support.annotation.NonNull;
 import android.support.annotation.StringRes;
-import android.support.v4.content.CursorLoader;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.view.View;
 
 import com.sam_chordas.android.stockhawk.presentation.common.ViewModel;
-import com.sam_chordas.android.stockhawk.utils.MessageAction;
 
 /**
- * Created by fabio on 07.03.16.
+ * Defines an observable view model for the my stocks screen.
  */
 public interface MyStocksViewModel extends ViewModel, MyStocksRecyclerAdapter.AdapterListener,
         FindStockDialogFragment.DialogListener, SaveStockWorkerListener {

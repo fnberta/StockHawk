@@ -11,11 +11,12 @@ import com.sam_chordas.android.stockhawk.R;
 import rx.subscriptions.CompositeSubscription;
 
 /**
- * Created by fabio on 07.03.16.
+ * Provides an abstract base implementation of the {@link ViewModel} interface.
  */
-public class ViewModelBaseImpl<T extends ViewModel.ViewListener> extends BaseObservable implements ViewModel {
+public abstract class ViewModelBaseImpl<T extends ViewModel.ViewListener> extends BaseObservable
+        implements ViewModel {
 
-    protected T mView;
+    protected final T mView;
     private CompositeSubscription mSubscriptions = new CompositeSubscription();
 
     public ViewModelBaseImpl(@Nullable Bundle savedState, T view) {

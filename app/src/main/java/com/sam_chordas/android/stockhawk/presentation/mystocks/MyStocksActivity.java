@@ -9,6 +9,7 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.annotation.StringRes;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
 import android.support.v7.widget.LinearLayoutManager;
@@ -44,6 +45,10 @@ import javax.inject.Inject;
 
 import rx.Single;
 
+/**
+ * Displays the user's saved stock symbols and their values in a list and allows the user to search
+ * and add new symbols via a {@link FloatingActionButton}.
+ */
 public class MyStocksActivity extends BaseActivity<MyStocksViewModel>
         implements LoaderManager.LoaderCallbacks<Cursor>,
         MyStocksViewModel.ViewListener,

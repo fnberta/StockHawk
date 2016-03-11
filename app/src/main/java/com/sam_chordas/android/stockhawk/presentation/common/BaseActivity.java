@@ -16,7 +16,7 @@ import com.sam_chordas.android.stockhawk.R;
 import javax.inject.Inject;
 
 /**
- * Created by fabio on 09.03.16.
+ * Provides an abstract base class for activities.
  */
 public abstract class BaseActivity<T extends ViewModel> extends AppCompatActivity
         implements ViewModel.ViewListener, BaseWorkerListener {
@@ -54,12 +54,7 @@ public abstract class BaseActivity<T extends ViewModel> extends AppCompatActivit
 
     @Override
     public void showMessage(@StringRes int message) {
-        showMessage(message, Snackbar.LENGTH_LONG);
-    }
-
-    @Override
-    public void showMessage(@StringRes int message, int length) {
-        Snackbar.make(getSnackbarView(), message, length).show();
+        Snackbar.make(getSnackbarView(), message, Snackbar.LENGTH_LONG).show();
     }
 
     protected abstract View getSnackbarView();

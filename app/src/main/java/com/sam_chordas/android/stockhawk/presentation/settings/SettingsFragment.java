@@ -13,7 +13,7 @@ import com.sam_chordas.android.stockhawk.StockHawk;
 import javax.inject.Inject;
 
 /**
- * Created by fabio on 11.03.16.
+ * Displays and handles the settings for the app.
  */
 public class SettingsFragment extends PreferenceFragmentCompat
         implements SharedPreferences.OnSharedPreferenceChangeListener {

@@ -5,6 +5,9 @@ import android.support.v7.app.AppCompatActivity;
 
 import com.sam_chordas.android.stockhawk.R;
 
+/**
+ * Provides a simple activity that hosts the settings fragment.
+ */
 public class SettingsActivity extends AppCompatActivity {
 
     @Override

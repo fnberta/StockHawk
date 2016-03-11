@@ -17,13 +17,12 @@ import dagger.Module;
 import dagger.Provides;
 
 /**
- * Defines which implementation to use for the paid compensations view model and how to instantiate
- * it.
+ * Defines which implementation to use for the stock details view model and how to instantiate it.
  */
 @Module
 public class StockDetailsViewModelModule extends BaseViewModelModule<StockDetailsViewModel.ViewListener> {
 
-    private String mStockSymbol;
+    private final String mStockSymbol;
 
     public StockDetailsViewModelModule(@Nullable Bundle savedState,
                                        @NonNull StockDetailsViewModel.ViewListener view,

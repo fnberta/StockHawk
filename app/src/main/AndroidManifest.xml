@@ -67,7 +67,7 @@
         </receiver>
 
         <service
-            android:name=".presentation.widget.QuotesWidgetService"
+            android:name=".data.services.QuotesWidgetService"
             android:exported="false"
             android:permission="android.permission.BIND_REMOTEVIEWS"
             />

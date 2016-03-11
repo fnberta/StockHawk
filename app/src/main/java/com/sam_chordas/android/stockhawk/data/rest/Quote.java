@@ -9,6 +9,9 @@ import com.sam_chordas.android.stockhawk.data.provider.QuoteColumns;
 
 import java.util.Locale;
 
+/**
+ * Represents a stock quote.
+ */
 public class Quote {
 
     @SerializedName("symbol")
