@@ -14,8 +14,7 @@ import javax.inject.Inject;
 
 
 /**
- * Provides an implementation of {@link LocalBroadcast} using the Android
- * {@link LocalBroadcastManager}.
+ * Provides methods for sending local messages using {@link LocalBroadcastManager}.
  */
 public class LocalBroadcast {
 
