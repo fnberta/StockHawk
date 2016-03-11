@@ -45,6 +45,10 @@ public interface MyStocksViewModel extends ViewModel, MyStocksRecyclerAdapter.Ad
 
     void onChangeUnitsMenuClick();
 
+    void onDefaultSymbolsSettingsChanged();
+
+    void onSyncSettingsChanged();
+
     interface ViewListener extends ViewModel.ViewListener {
         boolean isNetworkAvailable();
 
@@ -54,7 +58,9 @@ public interface MyStocksViewModel extends ViewModel, MyStocksRecyclerAdapter.Ad
 
         void loadUpdateStocksService();
 
-        void loadPeriodicQueryService();
+        void loadPeriodicUpdateStocksService(long period);
+
+        void cancelPeriodicUpdateStocksService();
 
         void loadSaveStockWorker(@NonNull String stockSymbol);
 

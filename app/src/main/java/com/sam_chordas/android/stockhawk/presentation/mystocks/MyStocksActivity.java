@@ -32,6 +32,8 @@ import com.sam_chordas.android.stockhawk.presentation.common.BaseActivity;
 import com.sam_chordas.android.stockhawk.presentation.mystocks.di.DaggerMyStocksComponent;
 import com.sam_chordas.android.stockhawk.presentation.mystocks.di.MyStocksComponent;
 import com.sam_chordas.android.stockhawk.presentation.mystocks.di.MyStocksViewModelModule;
+import com.sam_chordas.android.stockhawk.presentation.settings.SettingsActivity;
+import com.sam_chordas.android.stockhawk.presentation.settings.SettingsFragment;
 import com.sam_chordas.android.stockhawk.presentation.stockdetails.StockDetailsActivity;
 import com.sam_chordas.android.stockhawk.presentation.widget.QuotesWidgetProvider;
 import com.sam_chordas.android.stockhawk.utils.Utils;
@@ -48,6 +50,7 @@ public class MyStocksActivity extends BaseActivity<MyStocksViewModel>
 
     private static final int CURSOR_LOADER_ID = 0;
     private static final String PERIODIC_UPDATE_SERVICE = "PERIODIC_UPDATE_SERVICE";
+    private static final int SETTINGS_REQUEST = 0;
     @Inject
     StockRepository mStockRepo;
     private ActivityMyStocksBinding mBinding;
@@ -135,13 +138,34 @@ public class MyStocksActivity extends BaseActivity<MyStocksViewModel>
         final int id = item.getItemId();
         switch (id) {
             case R.id.action_settings:
-                // TODO: load settings if there are any
+                startSettingsScreen();
                 return true;
             case R.id.action_change_units:
                 mViewModel.onChangeUnitsMenuClick();
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
+        }
+    }
+
+    private void startSettingsScreen() {
+        final Intent intent = new Intent(this, SettingsActivity.class);
+        startActivityForResult(intent, SETTINGS_REQUEST);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == SETTINGS_REQUEST) {
+            switch (resultCode) {
+                case SettingsFragment.RESULT_DEFAULT_SYMBOLS_CHANGED:
+                    mViewModel.onDefaultSymbolsSettingsChanged();
+                    break;
+                case SettingsFragment.RESULT_SYNC_CHANGED:
+                    mViewModel.onSyncSettingsChanged();
+                    break;
+            }
         }
     }
 
@@ -191,16 +215,22 @@ public class MyStocksActivity extends BaseActivity<MyStocksViewModel>
     }
 
     @Override
-    public void loadPeriodicQueryService() {
+    public void loadPeriodicUpdateStocksService(long period) {
         final PeriodicTask periodicTask = new PeriodicTask.Builder()
                 .setService(UpdateStocksTaskService.class)
                 .setTag(PERIODIC_UPDATE_SERVICE)
-                .setPeriod(3600L)
+                .setPeriod(period)
                 .setFlex(10L)
                 .setRequiredNetwork(Task.NETWORK_STATE_CONNECTED)
                 .setRequiresCharging(false)
+                .setUpdateCurrent(true)
                 .build();
         GcmNetworkManager.getInstance(this).schedule(periodicTask);
+    }
+
+    @Override
+    public void cancelPeriodicUpdateStocksService() {
+        GcmNetworkManager.getInstance(this).cancelTask(PERIODIC_UPDATE_SERVICE, UpdateStocksTaskService.class);
     }
 
     @Override

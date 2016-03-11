@@ -28,4 +28,10 @@ public interface StockRepository {
     boolean showPercentages();
 
     void toggleShowPercentages();
+
+    boolean isLoadDefaultSymbolsEnabled();
+
+    boolean isSyncEnabled();
+
+    long getSyncPeriod();
 }

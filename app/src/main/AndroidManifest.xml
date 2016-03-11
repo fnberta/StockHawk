@@ -14,13 +14,11 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         >
-
         <activity
             android:name=".presentation.mystocks.MyStocksActivity"
             android:label="@string/app_name"
             android:launchMode="singleTop"
             >
-
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
 
@@ -32,16 +30,20 @@
             android:name=".presentation.stockdetails.StockDetailsActivity"
             android:parentActivityName=".presentation.mystocks.MyStocksActivity"
             />
+        <activity
+            android:name=".presentation.settings.SettingsActivity"
+            android:parentActivityName=".presentation.mystocks.MyStocksActivity"
+            />
 
         <service
             android:name=".data.services.UpdateStocksTaskService"
             android:exported="true"
-            android:permission="com.google.android.gms.permission.BIND_NETWORK_TASK_SERVICE">
+            android:permission="com.google.android.gms.permission.BIND_NETWORK_TASK_SERVICE"
+            >
             <intent-filter>
                 <action android:name="com.google.android.gms.gcm.ACTION_TASK_READY"/>
             </intent-filter>
         </service>
-
         <service android:name=".data.services.UpdateStocksIntentService"/>
 
         <provider
@@ -56,7 +58,6 @@
             >
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE"/>
-
             </intent-filter>
 
             <meta-data
