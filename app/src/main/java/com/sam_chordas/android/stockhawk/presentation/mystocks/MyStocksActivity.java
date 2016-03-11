@@ -18,6 +18,8 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.android.gms.gcm.GcmNetworkManager;
 import com.google.android.gms.gcm.PeriodicTask;
 import com.google.android.gms.gcm.Task;
@@ -50,7 +52,8 @@ public class MyStocksActivity extends BaseActivity<MyStocksViewModel>
 
     private static final int CURSOR_LOADER_ID = 0;
     private static final String PERIODIC_UPDATE_SERVICE = "PERIODIC_UPDATE_SERVICE";
-    private static final int SETTINGS_REQUEST = 0;
+    private static final int RC_PLAY_SERVICES = 1;
+    private static final int RC_SETTINGS = 2;
     @Inject
     StockRepository mStockRepo;
     private ActivityMyStocksBinding mBinding;
@@ -66,6 +69,8 @@ public class MyStocksActivity extends BaseActivity<MyStocksViewModel>
         mBinding = DataBindingUtil.setContentView(this, R.layout.activity_my_stocks);
         mBinding.setViewModel(mViewModel);
 
+        checkPlayServicesAvailable();
+
         setupRecyclerView();
         checkRefreshing();
         checkAddIntent(getIntent());
@@ -79,6 +84,20 @@ public class MyStocksActivity extends BaseActivity<MyStocksViewModel>
                 .myStocksViewModelModule(new MyStocksViewModelModule(savedInstanceState, this))
                 .build();
         mComponent.inject(this);
+    }
+
+    private void checkPlayServicesAvailable() {
+        final GoogleApiAvailability availability = GoogleApiAvailability.getInstance();
+        final int resultCode = availability.isGooglePlayServicesAvailable(this);
+
+        if (resultCode != ConnectionResult.SUCCESS) {
+            if (availability.isUserResolvableError(resultCode)) {
+                // Show dialog to resolve the error.
+                availability.getErrorDialog(this, resultCode, RC_PLAY_SERVICES).show();
+            } else {
+                showMessage(R.string.snackbar_error_google_play_services);
+            }
+        }
     }
 
     private void setupRecyclerView() {
@@ -150,14 +169,14 @@ public class MyStocksActivity extends BaseActivity<MyStocksViewModel>
 
     private void startSettingsScreen() {
         final Intent intent = new Intent(this, SettingsActivity.class);
-        startActivityForResult(intent, SETTINGS_REQUEST);
+        startActivityForResult(intent, RC_SETTINGS);
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        if (requestCode == SETTINGS_REQUEST) {
+        if (requestCode == RC_SETTINGS) {
             switch (resultCode) {
                 case SettingsFragment.RESULT_DEFAULT_SYMBOLS_CHANGED:
                     mViewModel.onDefaultSymbolsSettingsChanged();
