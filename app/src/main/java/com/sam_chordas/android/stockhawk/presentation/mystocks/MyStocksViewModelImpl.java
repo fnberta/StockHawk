@@ -181,7 +181,7 @@ public class MyStocksViewModelImpl extends ViewModelBaseImpl<MyStocksViewModel.V
             @Override
             public void onRefresh() {
                 if (mView.isNetworkAvailable()) {
-                    setRefreshing(true);
+                    mRefreshing = true;
                     mView.startUpdateStocksService();
                 } else {
                     setRefreshing(false);
