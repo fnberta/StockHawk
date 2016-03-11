@@ -29,7 +29,6 @@ ext {
     supportLibVersion = '23.2.0'
     playServicesVersion = '8.4.0'
     retrofitVersion = '2.0.0-beta4'
-    //leakCanaryVersion = '1.4-beta1'
 }
 
 dependencies {
