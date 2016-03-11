@@ -1,55 +1,81 @@
 package com.sam_chordas.android.stockhawk.presentation.mystocks;
 
+import android.app.ProgressDialog;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.database.Cursor;
 import android.databinding.DataBindingUtil;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.design.widget.Snackbar;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
+import android.support.annotation.StringRes;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
-import android.support.v7.app.AppCompatActivity;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.helper.ItemTouchHelper;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 
-import com.google.android.gms.gcm.GcmNetworkManager;
-import com.google.android.gms.gcm.PeriodicTask;
-import com.google.android.gms.gcm.Task;
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GoogleApiAvailability;
 import com.sam_chordas.android.stockhawk.R;
 import com.sam_chordas.android.stockhawk.StockHawk;
-import com.sam_chordas.android.stockhawk.data.di.RepositoriesModule;
+import com.sam_chordas.android.stockhawk.data.bus.LocalBroadcast;
+import com.sam_chordas.android.stockhawk.data.provider.QuoteProvider;
 import com.sam_chordas.android.stockhawk.data.services.UpdateStocksIntentService;
 import com.sam_chordas.android.stockhawk.data.services.UpdateStocksTaskService;
 import com.sam_chordas.android.stockhawk.databinding.ActivityMyStocksBinding;
 import com.sam_chordas.android.stockhawk.domain.repositories.StockRepository;
+import com.sam_chordas.android.stockhawk.presentation.common.BaseActivity;
 import com.sam_chordas.android.stockhawk.presentation.mystocks.di.DaggerMyStocksComponent;
+import com.sam_chordas.android.stockhawk.presentation.mystocks.di.MyStocksComponent;
 import com.sam_chordas.android.stockhawk.presentation.mystocks.di.MyStocksViewModelModule;
+import com.sam_chordas.android.stockhawk.presentation.settings.SettingsActivity;
+import com.sam_chordas.android.stockhawk.presentation.settings.SettingsFragment;
+import com.sam_chordas.android.stockhawk.presentation.stockdetails.StockDetailsActivity;
+import com.sam_chordas.android.stockhawk.presentation.widget.QuotesWidgetProvider;
 import com.sam_chordas.android.stockhawk.utils.Utils;
 
 import javax.inject.Inject;
 
 import rx.Single;
 
-public class MyStocksActivity extends AppCompatActivity
+/**
+ * Displays the user's saved stock symbols and their values in a list and allows the user to search
+ * and add new symbols via a {@link FloatingActionButton}.
+ */
+public class MyStocksActivity extends BaseActivity<MyStocksViewModel>
         implements LoaderManager.LoaderCallbacks<Cursor>,
         MyStocksViewModel.ViewListener,
         FindStockDialogFragment.DialogListener,
         SaveStockWorkerListener {
 
     private static final int CURSOR_LOADER_ID = 0;
-    private static final String PERIODIC_UPDATE_SERVICE = "PERIODIC_UPDATE_SERVICE";
-    @Inject
-    MyStocksViewModel mViewModel;
+    private static final int RC_PLAY_SERVICES = 1;
+    private static final int RC_SETTINGS = 2;
+    private final BroadcastReceiver mLocalBroadcastReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, @NonNull Intent intent) {
+            final String action = intent.getAction();
+            if (action.equals(LocalBroadcast.ACTION_DATA_UPDATED)) {
+                final boolean successful = intent.getBooleanExtra(LocalBroadcast.EXTRA_SUCCESSFUL, false);
+                mViewModel.onDataUpdated(successful);
+            }
+        }
+    };
     @Inject
     StockRepository mStockRepo;
     private ActivityMyStocksBinding mBinding;
     private MyStocksRecyclerAdapter mRecyclerAdapter;
+    private MyStocksComponent mComponent;
+    private ProgressDialog mProgressDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,39 +84,49 @@ public class MyStocksActivity extends AppCompatActivity
 
         mBinding = DataBindingUtil.setContentView(this, R.layout.activity_my_stocks);
         mBinding.setViewModel(mViewModel);
+
+        checkPlayServicesAvailable();
+
         setupRecyclerView();
+        checkAddIntent(getIntent());
 
         getSupportLoaderManager().initLoader(CURSOR_LOADER_ID, null, this);
-        startPeriodicQueryService();
     }
 
     private void injectDependencies(@Nullable Bundle savedInstanceState) {
-        DaggerMyStocksComponent.builder()
+        mComponent = DaggerMyStocksComponent.builder()
                 .applicationComponent(StockHawk.getAppComponent(this))
                 .myStocksViewModelModule(new MyStocksViewModelModule(savedInstanceState, this))
-                .repositoriesModule(new RepositoriesModule())
-                .build()
-                .inject(this);
+                .build();
+        mComponent.inject(this);
+    }
+
+    private void checkPlayServicesAvailable() {
+        final GoogleApiAvailability availability = GoogleApiAvailability.getInstance();
+        final int resultCode = availability.isGooglePlayServicesAvailable(this);
+
+        if (resultCode != ConnectionResult.SUCCESS) {
+            if (availability.isUserResolvableError(resultCode)) {
+                // Show dialog to resolve the error.
+                availability.getErrorDialog(this, resultCode, RC_PLAY_SERVICES).show();
+            } else {
+                showMessage(R.string.snackbar_error_google_play_services);
+            }
+        }
     }
 
     private void setupRecyclerView() {
-        mRecyclerAdapter = new MyStocksRecyclerAdapter(null, mViewModel);
-        mBinding.recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        mBinding.recyclerView.setHasFixedSize(true);
-        mBinding.recyclerView.setAdapter(mRecyclerAdapter);
+        mRecyclerAdapter = new MyStocksRecyclerAdapter(null, mViewModel, mStockRepo);
+        mBinding.rvMyStocks.setLayoutManager(new LinearLayoutManager(this));
+        mBinding.rvMyStocks.setHasFixedSize(true);
+        mBinding.rvMyStocks.setAdapter(mRecyclerAdapter);
         final ItemTouchHelper touchHelper = new ItemTouchHelper(new ItemTouchHelper.SimpleCallback(
-                ItemTouchHelper.UP | ItemTouchHelper.DOWN,
-                ItemTouchHelper.START | ItemTouchHelper.END) {
+                0, ItemTouchHelper.START | ItemTouchHelper.END) {
             @Override
             public boolean onMove(RecyclerView recyclerView,
                                   @NonNull RecyclerView.ViewHolder source,
                                   @NonNull RecyclerView.ViewHolder target) {
-                if (source.getItemViewType() != target.getItemViewType()) {
-                    return false;
-                }
-
-                mRecyclerAdapter.onItemMove(source.getAdapterPosition(), target.getAdapterPosition());
-                return true;
+                return false;
             }
 
             @Override
@@ -98,43 +134,35 @@ public class MyStocksActivity extends AppCompatActivity
                 mRecyclerAdapter.onItemDismiss(viewHolder.getAdapterPosition());
             }
         });
-        touchHelper.attachToRecyclerView(mBinding.recyclerView);
+        touchHelper.attachToRecyclerView(mBinding.rvMyStocks);
     }
 
-    private void startPeriodicQueryService() {
-        final long period = 3600L;
-        final long flex = 10L;
-
-        final PeriodicTask periodicTask = new PeriodicTask.Builder()
-                .setService(UpdateStocksTaskService.class)
-                .setTag(PERIODIC_UPDATE_SERVICE)
-                .setPeriod(period)
-                .setFlex(flex)
-                .setRequiredNetwork(Task.NETWORK_STATE_CONNECTED)
-                .setRequiresCharging(false)
-                .build();
-        GcmNetworkManager.getInstance(this).schedule(periodicTask);
+    private void checkAddIntent(@NonNull Intent intent) {
+        final boolean addQuote = intent.getBooleanExtra(QuotesWidgetProvider.EXTRA_ADD_QUOTE, false);
+        if (addQuote) {
+            showFindStockDialog();
+        }
     }
 
     @Override
-    protected void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
-
-        mViewModel.saveState(outState);
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        checkAddIntent(intent);
     }
 
     @Override
     protected void onStart() {
         super.onStart();
 
-        mViewModel.onViewVisible();
+        LocalBroadcastManager.getInstance(this).registerReceiver(mLocalBroadcastReceiver,
+                new IntentFilter(LocalBroadcast.ACTION_DATA_UPDATED));
     }
 
     @Override
     protected void onStop() {
         super.onStop();
 
-        mViewModel.onViewGone();
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(mLocalBroadcastReceiver);
     }
 
     @Override
@@ -148,10 +176,9 @@ public class MyStocksActivity extends AppCompatActivity
         final int id = item.getItemId();
         switch (id) {
             case R.id.action_settings:
-                // TODO: load settings if there are any
+                startSettingsScreen();
                 return true;
             case R.id.action_change_units:
-                // this is for changing stock changes from percent value to dollar value
                 mViewModel.onChangeUnitsMenuClick();
                 return true;
             default:
@@ -159,17 +186,34 @@ public class MyStocksActivity extends AppCompatActivity
         }
     }
 
+    private void startSettingsScreen() {
+        final Intent intent = new Intent(this, SettingsActivity.class);
+        startActivityForResult(intent, RC_SETTINGS);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == RC_SETTINGS && resultCode == SettingsFragment.RESULT_DEFAULT_SYMBOLS_CHANGED) {
+            mViewModel.onDefaultSymbolsSettingsChanged();
+        }
+    }
+
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
         mViewModel.onLoadingLocalStocks();
-        return mStockRepo.getMyStocksLoader();
+        return mComponent.getMyStocksLoader();
     }
 
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
         if (data.moveToFirst()) {
             mViewModel.setLoading(false);
+        } else if (!mStockRepo.isLoadDefaultSymbolsEnabled()) {
+            mViewModel.setLoading(false);
         }
+
         mRecyclerAdapter.swapCursor(data);
     }
 
@@ -179,25 +223,18 @@ public class MyStocksActivity extends AppCompatActivity
     }
 
     @Override
+    protected View getSnackbarView() {
+        return mBinding.rvMyStocks;
+    }
+
+    @Override
     public boolean isNetworkAvailable() {
         return Utils.isNetworkAvailable(this);
     }
 
     @Override
-    public void showMessage(int message, int length) {
-        Snackbar.make(mBinding.recyclerView, message, length).show();
-    }
-
-    @Override
-    public void removeWorker(@NonNull String workerTag) {
-        final FragmentManager fragmentManager = getSupportFragmentManager();
-        final Fragment worker = fragmentManager.findFragmentByTag(workerTag);
-        if (worker != null) {
-            fragmentManager
-                    .beginTransaction()
-                    .remove(worker)
-                    .commitAllowingStateLoss();
-        }
+    public boolean isDataAvailable() {
+        return mRecyclerAdapter.isDataAvailable();
     }
 
     @Override
@@ -206,8 +243,13 @@ public class MyStocksActivity extends AppCompatActivity
     }
 
     @Override
-    public void loadUpdateStocksService() {
+    public void startUpdateStocksService() {
         UpdateStocksIntentService.start(this);
+    }
+
+    @Override
+    public void startPeriodicUpdateStocksService(long period) {
+        UpdateStocksTaskService.startOrUpdate(this, period);
     }
 
     @Override
@@ -231,7 +273,22 @@ public class MyStocksActivity extends AppCompatActivity
     }
 
     @Override
-    public void onWorkerError(@NonNull String workerTag) {
-        mViewModel.onWorkerError(workerTag);
+    public void showStockDetailsScreen(int position) {
+        final String symbol = mRecyclerAdapter.getSymbolForPosition(position);
+        final Intent intent = new Intent(this, StockDetailsActivity.class);
+        intent.setData(QuoteProvider.Quotes.withSymbol(symbol));
+        startActivity(intent);
+    }
+
+    @Override
+    public void showProgressDialog(@StringRes int message) {
+        mProgressDialog = ProgressDialog.show(this, null, getString(message), true, true);
+    }
+
+    @Override
+    public void hideProgressDialog() {
+        if (mProgressDialog != null && mProgressDialog.isShowing()) {
+            mProgressDialog.hide();
+        }
     }
 }

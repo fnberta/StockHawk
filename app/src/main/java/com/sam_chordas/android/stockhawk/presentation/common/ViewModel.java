@@ -3,11 +3,12 @@ package com.sam_chordas.android.stockhawk.presentation.common;
 import android.databinding.Observable;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.annotation.StringRes;
 
 /**
- * Created by fabio on 07.03.16.
+ * Defines an observable view model.
  */
-public interface ViewModel extends Observable {
+public interface ViewModel extends Observable, BaseWorkerListener {
 
     /**
      * Saves the state of the view model in a bundle before recreation.
@@ -26,4 +27,11 @@ public interface ViewModel extends Observable {
      * and the view it references to be garbage collected.
      */
     void onViewGone();
+
+    interface ViewListener {
+
+        void showMessage(@StringRes int message);
+
+        void removeWorker(@NonNull String workerTag);
+    }
 }

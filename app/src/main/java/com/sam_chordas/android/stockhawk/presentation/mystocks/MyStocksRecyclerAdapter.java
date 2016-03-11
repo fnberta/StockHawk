@@ -26,35 +26,40 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.sam_chordas.android.stockhawk.data.provider.QuoteColumns;
-import com.sam_chordas.android.stockhawk.databinding.RowStocksQuoteBinding;
+import com.sam_chordas.android.stockhawk.databinding.ItemMyStocksBinding;
+import com.sam_chordas.android.stockhawk.domain.repositories.StockRepository;
 import com.sam_chordas.android.stockhawk.presentation.common.BaseBindingRow;
-import com.sam_chordas.android.stockhawk.presentation.common.ItemTouchHelperAdapter;
+import com.sam_chordas.android.stockhawk.presentation.common.SwipeToDismissAdapter;
 
 
 /**
- * Provides the adapter for a movie poster images grid.
+ * Provides the adapter for the list of stock symbols and their values.
  */
 public class MyStocksRecyclerAdapter extends RecyclerView.Adapter<MyStocksRecyclerAdapter.StockRow>
-        implements ItemTouchHelperAdapter {
+        implements SwipeToDismissAdapter {
 
+    private final MyStocksViewModel mViewModel;
+    private final StockRepository mStockRepo;
     private Cursor mCursor;
-    private MyStocksViewModel mViewModel;
     private int mRowIdColumn;
-    private boolean mDataIsValid;
+    private boolean mDataValid;
 
-    public MyStocksRecyclerAdapter(@Nullable Cursor cursor, @NonNull MyStocksViewModel viewModel) {
+    public MyStocksRecyclerAdapter(@Nullable Cursor cursor,
+                                   @NonNull MyStocksViewModel viewModel,
+                                   @NonNull StockRepository stockRepository) {
         mCursor = cursor;
-        mDataIsValid = cursor != null;
-        mRowIdColumn = mDataIsValid ? cursor.getColumnIndexOrThrow(BaseColumns._ID) : -1;
+        mDataValid = cursor != null;
+        mRowIdColumn = mDataValid ? cursor.getColumnIndexOrThrow(BaseColumns._ID) : -1;
         setHasStableIds(true);
 
         mViewModel = viewModel;
+        mStockRepo = stockRepository;
     }
 
     @Override
     public StockRow onCreateViewHolder(ViewGroup parent, int viewType) {
         final LayoutInflater inflater = LayoutInflater.from(parent.getContext());
-        final RowStocksQuoteBinding binding = RowStocksQuoteBinding.inflate(inflater, parent, false);
+        final ItemMyStocksBinding binding = ItemMyStocksBinding.inflate(inflater, parent, false);
         return new StockRow(binding, mViewModel);
     }
 
@@ -64,18 +69,18 @@ public class MyStocksRecyclerAdapter extends RecyclerView.Adapter<MyStocksRecycl
             throw new IllegalStateException("couldn't move cursor to position " + position);
         }
 
-        final String symbol = mCursor.getString(mCursor.getColumnIndex(QuoteColumns.SYMBOL));
-        final double bidPrice = mCursor.getDouble(mCursor.getColumnIndex(QuoteColumns.BID_PRICE));
-        final double changeValue = mCursor.getDouble(mCursor.getColumnIndex(QuoteColumns.CHANGE));
-        final String changePercent = mCursor.getString(mCursor.getColumnIndex(QuoteColumns.PERCENT_CHANGE));
+        final String symbol = mCursor.getString(mCursor.getColumnIndexOrThrow(QuoteColumns.SYMBOL));
+        final double bidPrice = mCursor.getDouble(mCursor.getColumnIndexOrThrow(QuoteColumns.BID_PRICE));
+        final double changeValue = mCursor.getDouble(mCursor.getColumnIndexOrThrow(QuoteColumns.CHANGE));
+        final String changePercent = mCursor.getString(mCursor.getColumnIndexOrThrow(QuoteColumns.PERCENT_CHANGE));
 
-        final RowStocksQuoteBinding binding = holder.getBinding();
+        final ItemMyStocksBinding binding = holder.getBinding();
         final StockRowViewModel viewModel = binding.getViewModel();
         if (viewModel == null) {
             binding.setViewModel(new StockRowViewModel(symbol, bidPrice, changeValue, changePercent,
-                    mViewModel.isShowPercent()));
+                    mStockRepo.showPercentages()));
         } else {
-            viewModel.setInfo(symbol, bidPrice, changeValue, changePercent, mViewModel.isShowPercent());
+            viewModel.setInfo(symbol, bidPrice, changeValue, changePercent, mStockRepo.showPercentages());
             viewModel.notifyChange();
         }
         binding.executePendingBindings();
@@ -83,12 +88,12 @@ public class MyStocksRecyclerAdapter extends RecyclerView.Adapter<MyStocksRecycl
 
     @Override
     public int getItemCount() {
-        return mDataIsValid ? mCursor.getCount() : 0;
+        return mDataValid ? mCursor.getCount() : 0;
     }
 
     @Override
     public long getItemId(int position) {
-        if (mDataIsValid) {
+        if (mDataValid) {
             return mCursor.moveToPosition(position)
                     ? mCursor.getLong(mRowIdColumn)
                     : RecyclerView.NO_ID;
@@ -117,11 +122,11 @@ public class MyStocksRecyclerAdapter extends RecyclerView.Adapter<MyStocksRecycl
 
         if (newCursor != null) {
             mRowIdColumn = newCursor.getColumnIndexOrThrow(BaseColumns._ID);
-            mDataIsValid = true;
+            mDataValid = true;
             notifyDataSetChanged();
         } else {
             mRowIdColumn = -1;
-            mDataIsValid = false;
+            mDataValid = false;
             // notify about the lack of a data set
             notifyItemRangeRemoved(0, itemCount);
         }
@@ -132,22 +137,48 @@ public class MyStocksRecyclerAdapter extends RecyclerView.Adapter<MyStocksRecycl
     @Override
     public void onItemDismiss(int position) {
         mCursor.moveToPosition(position);
-        final long rowId = mCursor.getLong(mCursor.getColumnIndex(QuoteColumns._ID));
+        final long rowId = mCursor.getLong(mCursor.getColumnIndexOrThrow(QuoteColumns._ID));
         mViewModel.onDeleteStockItem(rowId);
     }
 
-    @Override
-    public void onItemMove(int oldPos, int newPos) {
-        // TODO: implement reordering
+    /**
+     * Returns whether the cursor is valid and not empty.
+     *
+     * @return whether the cursor is valid and not empty
+     */
+    public boolean isDataAvailable() {
+        return mDataValid && mCursor.moveToFirst();
     }
 
+    /**
+     * Returns the symbol for the given position.
+     *
+     * @param position the position to return the symbol for
+     * @return the symbol for the given position
+     */
+    public String getSymbolForPosition(int position) {
+        mCursor.moveToPosition(position);
+        return mCursor.getString(mCursor.getColumnIndexOrThrow(QuoteColumns.SYMBOL));
+    }
+
+    /**
+     * Defines the interaction with the view.
+     */
     public interface AdapterListener {
+        /**
+         * Launches the detail screen for the clicked stock symbol.
+         *
+         * @param position the position of the clicked symbol
+         */
         void onStockItemClick(int position);
     }
 
-    public static class StockRow extends BaseBindingRow<RowStocksQuoteBinding> {
+    /**
+     * Provides a bindable {@link RecyclerView} row for a stock and its value.
+     */
+    public static class StockRow extends BaseBindingRow<ItemMyStocksBinding> {
 
-        public StockRow(@NonNull RowStocksQuoteBinding binding,
+        public StockRow(@NonNull ItemMyStocksBinding binding,
                         @NonNull final AdapterListener listener) {
             super(binding);
 

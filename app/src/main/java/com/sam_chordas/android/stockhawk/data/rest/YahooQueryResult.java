@@ -1,71 +1,61 @@
 package com.sam_chordas.android.stockhawk.data.rest;
 
+import com.google.gson.annotations.SerializedName;
+
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Defines the results of a query to the Yahoo Finance API for stock quotes.
+ */
 public class YahooQueryResult {
 
-    private Query query;
+    @SerializedName("query")
+    private Query mQuery;
 
     public Query getQuery() {
-        return query;
+        return mQuery;
     }
 
     public void setQuery(Query query) {
-        this.query = query;
+        mQuery = query;
     }
 
     public static class Query {
 
-        private int count;
-        private String created;
-        private String lang;
-        private Results results;
+        @SerializedName("count")
+        private int mCount;
+        @SerializedName("results")
+        private Results mResults;
 
         public int getCount() {
-            return count;
+            return mCount;
         }
 
         public void setCount(int count) {
-            this.count = count;
-        }
-
-        public String getCreated() {
-            return created;
-        }
-
-        public void setCreated(String created) {
-            this.created = created;
-        }
-
-        public String getLang() {
-            return lang;
-        }
-
-        public void setLang(String lang) {
-            this.lang = lang;
+            mCount = count;
         }
 
         public Results getResults() {
-            return results;
+            return mResults;
         }
 
         public void setResults(Results results) {
-            this.results = results;
+            mResults = results;
         }
-
     }
 
     public static class Results {
 
-        private List<Quote> quote = new ArrayList<>();
+        @SerializedName("quote")
+        private List<Quote> mQuotes = new ArrayList<>();
 
-        public List<Quote> getQuote() {
-            return quote;
+        public List<Quote> getQuotes() {
+            return mQuotes;
         }
 
-        public void setQuote(List<Quote> quote) {
-            this.quote = quote;
+        public void setQuotes(List<Quote> quotes) {
+            mQuotes = quotes;
         }
     }
 }

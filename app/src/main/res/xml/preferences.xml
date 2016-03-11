@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <SwitchPreference
+        android:defaultValue="true"
+        android:key="pref_default_symbols"
+        android:summary="@string/pref_default_symbols_summ"
+        android:title="@string/pref_default_symbols_title"
+        />
+
+    <SwitchPreference
+        android:defaultValue="true"
+        android:key="pref_sync"
+        android:title="@string/pref_sync_title"
+        />
+
+    <ListPreference
+        android:defaultValue="3600"
+        android:dependency="pref_sync"
+        android:dialogTitle="@string/pref_sync_interval_title"
+        android:entries="@array/pref_sync_interval_entries"
+        android:entryValues="@array/pref_sync_interval_values"
+        android:key="pref_sync_interval"
+        android:title="@string/pref_sync_interval_title"
+        />
+
+</PreferenceScreen>

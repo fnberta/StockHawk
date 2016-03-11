@@ -11,7 +11,7 @@ import net.simonvt.schematic.annotation.InexactContentUri;
 import net.simonvt.schematic.annotation.TableEndpoint;
 
 /**
- * Created by sam_chordas on 10/5/15.
+ * Provides a content provider to access the local sqlite database.
  */
 @ContentProvider(authority = QuoteProvider.CONTENT_AUTHORITY, database = QuoteDatabase.class)
 public class QuoteProvider {

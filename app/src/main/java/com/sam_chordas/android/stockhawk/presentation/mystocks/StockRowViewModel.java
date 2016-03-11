@@ -9,7 +9,7 @@ import com.sam_chordas.android.stockhawk.utils.Utils;
 import java.text.NumberFormat;
 
 /**
- * Created by fabio on 07.03.16.
+ * Provides a view model for one row in the my stocks list.
  */
 public class StockRowViewModel extends BaseObservable {
 
@@ -26,7 +26,7 @@ public class StockRowViewModel extends BaseObservable {
     }
 
     public void setInfo(@NonNull String stockSymbol, double stockBidPrice, double stockChange,
-                         @NonNull String stockChangePercent, boolean showPercentage) {
+                        @NonNull String stockChangePercent, boolean showPercentage) {
         final NumberFormat numberFormat = Utils.getValueFormatter();
         mStockSymbol = stockSymbol;
         mStockBidPrice = numberFormat.format(stockBidPrice);

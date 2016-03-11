@@ -6,19 +6,22 @@ import android.content.Intent;
 import android.support.annotation.NonNull;
 
 import com.sam_chordas.android.stockhawk.StockHawk;
-import com.sam_chordas.android.stockhawk.data.di.RepositoriesModule;
+import com.sam_chordas.android.stockhawk.data.bus.LocalBroadcast;
 import com.sam_chordas.android.stockhawk.data.services.di.DaggerUpdateStocksServiceComponent;
+import com.sam_chordas.android.stockhawk.di.RepositoriesModule;
 import com.sam_chordas.android.stockhawk.domain.repositories.StockRepository;
 
 import javax.inject.Inject;
 
 /**
- * Created by sam_chordas on 10/1/15.
+ * Provides an {@link IntentService} that updates the locally stored stock values.
  */
 public class UpdateStocksIntentService extends IntentService {
 
     @Inject
     StockRepository mStockRepo;
+    @Inject
+    LocalBroadcast mLocalBroadcast;
 
     public UpdateStocksIntentService() {
         super(UpdateStocksIntentService.class.getName());
@@ -32,8 +35,8 @@ public class UpdateStocksIntentService extends IntentService {
     @Override
     protected void onHandleIntent(Intent intent) {
         injectDependencies();
-
-        mStockRepo.updateStocks();
+        final boolean successful = mStockRepo.updateStocks();
+        mLocalBroadcast.sendDataUpdated(successful);
     }
 
     private void injectDependencies() {

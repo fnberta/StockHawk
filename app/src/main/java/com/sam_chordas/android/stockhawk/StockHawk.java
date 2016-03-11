@@ -4,13 +4,12 @@ import android.app.Application;
 import android.content.Context;
 import android.support.annotation.NonNull;
 
-import com.sam_chordas.android.stockhawk.data.di.ApplicationComponent;
-import com.sam_chordas.android.stockhawk.data.di.ApplicationModule;
-import com.sam_chordas.android.stockhawk.data.di.DaggerApplicationComponent;
-import com.sam_chordas.android.stockhawk.data.di.YahooFinanceServiceModule;
+import com.sam_chordas.android.stockhawk.di.ApplicationComponent;
+import com.sam_chordas.android.stockhawk.di.ApplicationModule;
+import com.sam_chordas.android.stockhawk.di.DaggerApplicationComponent;
 
 /**
- * Created by fabio on 07.03.16.
+ * Instantiates application wide components.
  */
 public class StockHawk extends Application {
 
@@ -34,7 +33,6 @@ public class StockHawk extends Application {
     private void buildAppComponent() {
         mAppComponent = DaggerApplicationComponent.builder()
                 .applicationModule(new ApplicationModule(this))
-                .yahooFinanceServiceModule(new YahooFinanceServiceModule())
                 .build();
     }
 }

@@ -5,11 +5,12 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.support.annotation.NonNull;
 
+import java.text.DateFormat;
 import java.text.NumberFormat;
-import java.util.ArrayList;
+import java.util.Locale;
 
 /**
- * Created by sam_chordas on 10/8/15.
+ * Provides static utility methods.
  */
 public class Utils {
 
@@ -27,7 +28,7 @@ public class Utils {
                 (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
 
         final NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
-        return activeNetwork != null && activeNetwork.isConnectedOrConnecting();
+        return activeNetwork != null && activeNetwork.isConnected();
     }
 
     /**
@@ -45,6 +46,17 @@ public class Utils {
     }
 
     /**
+     * Returns a date formatter that formats date to the specified format.
+     *
+     * @param shortFormat whether to format in short format
+     * @return a properly configured {@link DateFormat} instance
+     */
+    public static DateFormat getDateFormatter(boolean shortFormat) {
+        return DateFormat.getDateInstance(shortFormat ? DateFormat.SHORT : DateFormat.LONG,
+                Locale.getDefault());
+    }
+
+    /**
      * Returns whether the number is negative.
      *
      * @param d the number to check
@@ -52,9 +64,5 @@ public class Utils {
      */
     public static boolean isNegative(double d) {
         return Double.doubleToRawLongBits(d) < 0;
-    }
-
-    public static ArrayList quoteJsonToContentVals(String JSON) {
-        return null;
     }
 }

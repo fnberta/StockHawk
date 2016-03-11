@@ -5,45 +5,44 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.design.widget.Snackbar;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.text.TextUtils;
 import android.view.View;
 
 import com.sam_chordas.android.stockhawk.BR;
 import com.sam_chordas.android.stockhawk.R;
 import com.sam_chordas.android.stockhawk.data.repositories.QuoteException;
+import com.sam_chordas.android.stockhawk.data.repositories.QuoteException.Code;
 import com.sam_chordas.android.stockhawk.domain.repositories.StockRepository;
 import com.sam_chordas.android.stockhawk.presentation.common.ViewModelBaseImpl;
 
 import rx.Single;
 import rx.SingleSubscriber;
-import rx.android.schedulers.AndroidSchedulers;
-import rx.schedulers.Schedulers;
 
 /**
- * Created by fabio on 07.03.16.
+ * Provides an implementation of the {@link MyStocksViewModel} interface.
  */
-public class MyStocksViewModelImpl extends ViewModelBaseImpl implements MyStocksViewModel {
+public class MyStocksViewModelImpl extends ViewModelBaseImpl<MyStocksViewModel.ViewListener>
+        implements MyStocksViewModel {
 
     private static final String STATE_LOADING = "STATE_LOADING";
-    private static final String STATE_SHOW_PERCENT = "STATE_SHOW_PERCENT";
-    private MyStocksViewModel.ViewListener mView;
-    private StockRepository mStockRepo;
+    private static final String STATE_REFRESHING = "STATE_REFRESHING";
+    private final StockRepository mStockRepo;
     private boolean mLoading;
-    private boolean mShowPercent;
+    private boolean mRefreshing;
 
-    public MyStocksViewModelImpl(@Nullable Bundle savedState, @NonNull ViewListener view,
+    public MyStocksViewModelImpl(@Nullable Bundle savedState,
+                                 @NonNull MyStocksViewModel.ViewListener view,
                                  @NonNull StockRepository stockRepo) {
-        super(savedState);
-        mView = view;
+        super(savedState, view);
+
         mStockRepo = stockRepo;
 
         if (savedState != null) {
             mLoading = savedState.getBoolean(STATE_LOADING);
-            mShowPercent = savedState.getBoolean(STATE_SHOW_PERCENT);
+            mRefreshing = savedState.getBoolean(STATE_REFRESHING);
         } else {
             mLoading = true;
-            mShowPercent = true;
         }
     }
 
@@ -52,7 +51,7 @@ public class MyStocksViewModelImpl extends ViewModelBaseImpl implements MyStocks
         super.saveState(outState);
 
         outState.putBoolean(STATE_LOADING, mLoading);
-        outState.putBoolean(STATE_SHOW_PERCENT, mShowPercent);
+        outState.putBoolean(STATE_REFRESHING, mRefreshing);
     }
 
     @Bindable
@@ -68,50 +67,86 @@ public class MyStocksViewModelImpl extends ViewModelBaseImpl implements MyStocks
     }
 
     @Override
-    public boolean isShowPercent() {
-        return mShowPercent;
+    public boolean isEmpty() {
+        return !mView.isDataAvailable();
+    }
+
+    @Override
+    @Bindable
+    public boolean isRefreshing() {
+        return mRefreshing;
+    }
+
+    @Override
+    public void setRefreshing(boolean refreshing) {
+        mRefreshing = refreshing;
+        notifyPropertyChanged(BR.refreshing);
+    }
+
+    @Override
+    public void onViewVisible() {
+        super.onViewVisible();
+
+        if (!mView.isNetworkAvailable()) {
+            mView.showMessage(R.string.snackbar_error_no_network_out_of_date);
+        }
     }
 
     @Override
     public void onLoadingLocalStocks() {
+        mView.startPeriodicUpdateStocksService(mStockRepo.getSyncPeriod());
+
         if (mView.isNetworkAvailable()) {
-            mView.loadUpdateStocksService();
+            mView.startUpdateStocksService();
         } else {
-            mView.showMessage(R.string.snackbar_no_network, Snackbar.LENGTH_INDEFINITE);
+            setLoading(false);
+        }
+    }
+
+    @Override
+    public void onDataUpdated(boolean successful) {
+        setRefreshing(false);
+        // If successful, loader will automatically re-query the data. But if not, show an
+        // appropriate error message.
+        if (!successful) {
+            mView.showMessage(R.string.snackbar_error_update_stocks);
         }
     }
 
     @Override
     public void onStockItemClick(int position) {
-        // TODO: load details screen
+        mView.showStockDetailsScreen(position);
     }
 
     @Override
     public void onDeleteStockItem(long rowId) {
         getSubscriptions().add(mStockRepo.deleteStock(rowId)
-                .subscribe(new SingleSubscriber<Integer>() {
+                .subscribe(new SingleSubscriber<Boolean>() {
                     @Override
-                    public void onSuccess(Integer value) {
-                        mView.showMessage(R.string.snackbar_stock_removed, Snackbar.LENGTH_LONG);
+                    public void onSuccess(Boolean isEmpty) {
+                        if (isEmpty) {
+                            if (mStockRepo.isLoadDefaultSymbolsEnabled()) {
+                                setLoading(true);
+                                mView.startUpdateStocksService();
+                            } else {
+                                notifyPropertyChanged(BR.empty);
+                            }
+                        }
                     }
 
                     @Override
                     public void onError(Throwable error) {
-                        // TODO: handle error
+                        mView.showMessage(R.string.snackbar_error_delete_stock);
+                        mView.notifyItemsChanged();
                     }
                 })
         );
     }
 
     @Override
-    public void onChangeUnitsMenuClick() {
-        mShowPercent = !mShowPercent;
-        mView.notifyItemsChanged();
-    }
-
-    @Override
     public void onStockEntered(@NonNull final String stockSymbol) {
         if (!TextUtils.isEmpty(stockSymbol)) {
+            mView.showProgressDialog(R.string.progress_saving_symbol);
             mView.loadSaveStockWorker(stockSymbol);
         }
     }
@@ -123,42 +158,47 @@ public class MyStocksViewModelImpl extends ViewModelBaseImpl implements MyStocks
                     @Override
                     public void onSuccess(Uri value) {
                         mView.removeWorker(workerTag);
-                        mView.showMessage(R.string.snackbar_stock_added, Snackbar.LENGTH_LONG);
+                        mView.hideProgressDialog();
+                        mView.showMessage(R.string.snackbar_stock_added);
                     }
 
                     @Override
                     public void onError(Throwable error) {
                         mView.removeWorker(workerTag);
+                        mView.hideProgressDialog();
 
-                        try {
-                            showAppropriateErrorMessage((QuoteException) error);
-                        } catch (ClassCastException e) {
-                            mView.showMessage(R.string.snackbar_error_add_stock, Snackbar.LENGTH_LONG);
+                        if (error instanceof QuoteException) {
+                            final int code = ((QuoteException) error).getCode();
+                            switch (code) {
+                                case Code.ALREADY_SAVED:
+                                    mView.showMessage(R.string.snackbar_error_add_stock_already_saved);
+                                    break;
+                                case Code.SYMBOL_NOT_FOUND:
+                                    mView.showMessage(R.string.snackbar_error_add_stock_not_found);
+                                    break;
+                            }
+                        } else {
+                            mView.showMessage(R.string.snackbar_error_add_stock);
                         }
-
                     }
                 })
         );
     }
 
-    private void showAppropriateErrorMessage(QuoteException exception) {
-        final int code = exception.getCode();
-        switch (code) {
-            case QuoteException.Code.ALREADY_SAVED:
-                mView.showMessage(R.string.snackbar_error_add_stock_already_saved, Snackbar.LENGTH_LONG);
-                break;
-            case QuoteException.Code.SYMBOL_NOT_FOUND:
-                mView.showMessage(R.string.snackbar_error_add_stock_not_found, Snackbar.LENGTH_LONG);
-                break;
-            default:
-                mView.showMessage(R.string.snackbar_error_add_stock, Snackbar.LENGTH_LONG);
-        }
-    }
-
     @Override
-    public void onWorkerError(@NonNull String workerTag) {
-        mView.removeWorker(workerTag);
-        mView.showMessage(R.string.snackbar_error_unknown, Snackbar.LENGTH_LONG);
+    public SwipeRefreshLayout.OnRefreshListener getOnRefreshListener() {
+        return new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                if (mView.isNetworkAvailable()) {
+                    mRefreshing = true;
+                    mView.startUpdateStocksService();
+                } else {
+                    setRefreshing(false);
+                    mView.showMessage(R.string.snackbar_error_no_network);
+                }
+            }
+        };
     }
 
     @Override
@@ -166,7 +206,21 @@ public class MyStocksViewModelImpl extends ViewModelBaseImpl implements MyStocks
         if (mView.isNetworkAvailable()) {
             mView.showFindStockDialog();
         } else {
-            mView.showMessage(R.string.snackbar_no_network, Snackbar.LENGTH_LONG);
+            mView.showMessage(R.string.snackbar_error_no_network);
+        }
+    }
+
+    @Override
+    public void onChangeUnitsMenuClick() {
+        mStockRepo.toggleShowPercentages();
+        mView.notifyItemsChanged();
+    }
+
+    @Override
+    public void onDefaultSymbolsSettingsChanged() {
+        if (mStockRepo.isLoadDefaultSymbolsEnabled() && mView.isNetworkAvailable()) {
+            mView.startUpdateStocksService();
+            setLoading(true);
         }
     }
 }

@@ -1,5 +1,7 @@
 <layout
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     >
 
     <data>
@@ -17,12 +19,23 @@
         android:layout_height="match_parent"
         >
 
-        <android.support.v7.widget.RecyclerView
-            android:id="@+id/recycler_view"
+        <com.sam_chordas.android.stockhawk.presentation.mystocks.widgets.SwipeRefreshLayoutHack
+            android:id="@+id/srl_my_stocks"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:visibility="@{viewModel.loading ? View.GONE : View.VISIBLE}"
-            />
+            app:colorScheme="@{@intArray/srl_color_scheme}"
+            app:onRefreshListener="@{viewModel.onRefreshListener}"
+            app:refreshing="@{viewModel.refreshing}"
+            >
+
+            <android.support.v7.widget.RecyclerView
+                android:id="@+id/rv_my_stocks"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:visibility="@{viewModel.loading ? View.GONE : View.VISIBLE}"
+                />
+
+        </com.sam_chordas.android.stockhawk.presentation.mystocks.widgets.SwipeRefreshLayoutHack>
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -44,17 +57,30 @@
                 android:id="@+id/tv_progress_message"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/progress_loading_initial"
+                android:text="@string/progress_loading_my_stocks"
                 />
 
         </LinearLayout>
 
+        <TextView
+            style="@style/TextAppearance.AppCompat.Title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:drawablePadding="@dimen/small_space"
+            android:drawableTop="@drawable/ic_attach_money_white_144dp"
+            android:gravity="center_horizontal"
+            android:text="@string/my_stock_empty"
+            android:visibility="@{!viewModel.empty ? View.GONE : viewModel.loading ? View.GONE : View.VISIBLE}"
+            tools:visibility="visible"
+            />
+
         <android.support.design.widget.FloatingActionButton
-            android:id="@+id/fab"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="bottom|end"
             android:layout_margin="@dimen/normal_space"
+            android:contentDescription="@string/desc_my_stocks_add_fab"
             android:onClick="@{viewModel.onFabClick}"
             android:src="@drawable/ic_add_white_24dp"
             />

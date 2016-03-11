@@ -2,12 +2,16 @@ package com.sam_chordas.android.stockhawk.data.rest;
 
 import android.content.ContentValues;
 import android.support.annotation.NonNull;
+import android.text.TextUtils;
 
 import com.google.gson.annotations.SerializedName;
 import com.sam_chordas.android.stockhawk.data.provider.QuoteColumns;
 
 import java.util.Locale;
 
+/**
+ * Represents a stock quote.
+ */
 public class Quote {
 
     @SerializedName("symbol")
@@ -51,8 +55,20 @@ public class Quote {
         mChangeInPercent = changeInPercent;
     }
 
+    public ContentValues getContentValuesEntry() {
+        final ContentValues cv = new ContentValues();
+        cv.put(QuoteColumns.SYMBOL, mSymbol);
+        cv.put(QuoteColumns.BID_PRICE, mBid);
+        cv.put(QuoteColumns.CHANGE, mChange);
+        cv.put(QuoteColumns.PERCENT_CHANGE, getChangeInPercentTruncated());
+        return cv;
+    }
+
     private String getChangeInPercentTruncated() {
         String truncated = mChangeInPercent;
+        if (TextUtils.isEmpty(truncated)) {
+            return "0.00%";
+        }
 
         final String weight = truncated.substring(0, 1);
         final String ampersand = truncated.substring(truncated.length() - 1, truncated.length());
@@ -64,14 +80,5 @@ public class Quote {
         stringBuilder.insert(0, weight);
         stringBuilder.append(ampersand);
         return stringBuilder.toString();
-    }
-
-    public ContentValues getContentValuesEntry() {
-        final ContentValues cv = new ContentValues();
-        cv.put(QuoteColumns.SYMBOL, mSymbol);
-        cv.put(QuoteColumns.BID_PRICE, mBid);
-        cv.put(QuoteColumns.CHANGE, mChange);
-        cv.put(QuoteColumns.PERCENT_CHANGE, getChangeInPercentTruncated());
-        return cv;
     }
 }

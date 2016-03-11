@@ -4,9 +4,11 @@
 
 package com.sam_chordas.android.stockhawk.presentation.mystocks.di;
 
-import com.sam_chordas.android.stockhawk.data.di.ApplicationComponent;
-import com.sam_chordas.android.stockhawk.data.di.RepositoriesModule;
-import com.sam_chordas.android.stockhawk.data.di.scopes.PerActivity;
+import android.support.v4.content.CursorLoader;
+
+import com.sam_chordas.android.stockhawk.di.ApplicationComponent;
+import com.sam_chordas.android.stockhawk.di.RepositoriesModule;
+import com.sam_chordas.android.stockhawk.di.scopes.PerActivity;
 import com.sam_chordas.android.stockhawk.presentation.mystocks.MyStocksActivity;
 
 import dagger.Component;
@@ -16,8 +18,10 @@ import dagger.Component;
  */
 @PerActivity
 @Component(dependencies = {ApplicationComponent.class},
-        modules = {MyStocksViewModelModule.class, RepositoriesModule.class})
+        modules = {MyStocksViewModelModule.class, MyStocksLoaderModule.class, RepositoriesModule.class})
 public interface MyStocksComponent {
 
     void inject(MyStocksActivity myStocksActivity);
+
+    CursorLoader getMyStocksLoader();
 }

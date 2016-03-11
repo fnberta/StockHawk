@@ -8,19 +8,18 @@ import android.support.v4.app.FragmentManager;
 import android.text.TextUtils;
 
 import com.sam_chordas.android.stockhawk.domain.repositories.StockRepository;
-import com.sam_chordas.android.stockhawk.presentation.common.BaseWorker;
+import com.sam_chordas.android.stockhawk.presentation.common.BaseRxWorker;
 import com.sam_chordas.android.stockhawk.presentation.common.di.WorkerComponent;
 
 import javax.inject.Inject;
 
 import rx.Observable;
-import rx.android.schedulers.AndroidSchedulers;
-import rx.schedulers.Schedulers;
 
 /**
- * Created by fabio on 08.03.16.
+ * Hosts the {@link Observable} that fetches the data for a newly entered stock symbol and saves it
+ * to the local data store.
  */
-public class SaveStockWorker extends BaseWorker<Uri, SaveStockWorkerListener> {
+public class SaveStockWorker extends BaseRxWorker<Uri, SaveStockWorkerListener> {
 
     private static final String WORKER_TAG = SaveStockWorker.class.getCanonicalName();
     private static final String KEY_STOCK_SYMBOL = "STOCK_SYMBOL";

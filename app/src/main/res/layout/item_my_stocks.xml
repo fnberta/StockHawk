@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    >
+
+    <data>
+
+        <variable
+            name="viewModel"
+            type="com.sam_chordas.android.stockhawk.presentation.mystocks.StockRowViewModel"
+            />
+    </data>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/list_avatar_with_text"
+        android:background="?selectableItemBackground"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingEnd="@dimen/key_line_1"
+        android:paddingStart="@dimen/key_line_1"
+        >
+
+        <TextView
+            style="@style/StockSymbolTextStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@{viewModel.stockSymbol}"
+            tools:text="GOOG"
+            />
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="end"
+            >
+
+            <TextView
+                style="@style/TextAppearance.AppCompat.Subhead"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="@dimen/small_space"
+                android:text="@{viewModel.stockBidPrice}"
+                tools:text="1000.00"
+                />
+
+            <TextView
+                style="@style/TextAppearance.AppCompat.Title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@{viewModel.stockUp ? @drawable/percent_change_pill_green : @drawable/percent_change_pill_red}"
+                android:paddingEnd="@dimen/min_space"
+                android:paddingStart="@dimen/min_space"
+                android:text="@{viewModel.stockChange}"
+                tools:text="100%"
+                />
+        </LinearLayout>
+    </LinearLayout>
+
+</layout>

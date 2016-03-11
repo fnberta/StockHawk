@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    >
+
+    <FrameLayout
+        android:id="@+id/fl_widget_title_bar"
+        android:layout_width="match_parent"
+        android:layout_height="?android:attr/actionBarSize"
+        android:background="@color/material_blue_500"
+        >
+
+        <TextView
+            style="@style/TextAppearance.AppCompat.Title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="start|center_vertical"
+            android:layout_marginStart="@dimen/key_line_1"
+            android:text="@string/widget_title"
+            />
+
+        <ImageView
+            android:id="@+id/iv_widget_title_add"
+            android:layout_width="@dimen/touch_target_min"
+            android:layout_height="@dimen/touch_target_min"
+            android:layout_gravity="end|center_vertical"
+            android:layout_marginEnd="@dimen/min_space"
+            android:contentDescription="@string/desc_my_stocks_add_fab"
+            android:padding="@dimen/icon_padding"
+            android:src="@drawable/ic_add_white_24dp"
+            />
+
+    </FrameLayout>
+
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:background="@color/material_blue_700"
+        >
+
+        <ListView
+            android:id="@+id/lv_widget"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:divider="@null"
+            android:dividerHeight="0dp"
+            tools:listitem="@layout/item_widget_my_stocks"
+            />
+
+        <TextView
+            android:id="@+id/tv_widget_empty_view"
+            style="@style/TextAppearance.AppCompat.Title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="@string/my_stock_empty"
+            />
+    </FrameLayout>
+
+</LinearLayout>

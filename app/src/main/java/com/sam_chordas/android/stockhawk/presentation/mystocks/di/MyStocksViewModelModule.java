@@ -8,8 +8,9 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
-import com.sam_chordas.android.stockhawk.data.di.scopes.PerActivity;
+import com.sam_chordas.android.stockhawk.di.scopes.PerActivity;
 import com.sam_chordas.android.stockhawk.domain.repositories.StockRepository;
+import com.sam_chordas.android.stockhawk.presentation.common.di.BaseViewModelModule;
 import com.sam_chordas.android.stockhawk.presentation.mystocks.MyStocksViewModel;
 import com.sam_chordas.android.stockhawk.presentation.mystocks.MyStocksViewModelImpl;
 
@@ -21,15 +22,12 @@ import dagger.Provides;
  * it.
  */
 @Module
-public class MyStocksViewModelModule {
+public class MyStocksViewModelModule extends BaseViewModelModule<MyStocksViewModel.ViewListener> {
 
-    private Bundle mSavedState;
-    private MyStocksViewModel.ViewListener mView;
 
     public MyStocksViewModelModule(@Nullable Bundle savedState,
                                    @NonNull MyStocksViewModel.ViewListener view) {
-        mSavedState = savedState;
-        mView = view;
+        super(savedState, view);
     }
 
     @PerActivity

@@ -29,13 +29,14 @@ ext {
     supportLibVersion = '23.2.0'
     playServicesVersion = '8.4.0'
     retrofitVersion = '2.0.0-beta4'
-    //leakCanaryVersion = '1.4-beta1'
 }
 
 dependencies {
 
     compile "com.google.android.gms:play-services-gcm:${playServicesVersion}"
     compile "com.android.support:design:${supportLibVersion}"
+    compile "com.android.support:preference-v7:${supportLibVersion}"
+    compile "com.android.support:preference-v14:${supportLibVersion}"
     compile 'com.google.dagger:dagger:2.0.2'
     apt 'com.google.dagger:dagger-compiler:2.0.2'
     provided 'javax.annotation:jsr250-api:1.0'
@@ -47,4 +48,5 @@ dependencies {
     compile 'com.squareup.okhttp3:logging-interceptor:3.0.1'
     compile 'net.simonvt.schematic:schematic:0.6.3'
     apt 'net.simonvt.schematic:schematic-compiler:0.6.3'
+    compile 'com.github.PhilJay:MPAndroidChart:v2.2.3'
 }
